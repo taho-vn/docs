@@ -1,0 +1,2350 @@
+---
+title: "Data dictionary"
+description: "Đầy đủ model, database column, Prisma type, nullability, default, relation và constraint từ current schema."
+keywords: ["data dictionary", "Prisma models", "database fields", "schema", "relations"]
+schemaFingerprint: "sha256:fd1f2de491363c8d11dbf7708e23488f3fff6389ae0f9e71dbf40c13eb1e8860"
+---
+
+Trang này được sinh trực tiếp từ `prisma/schema.prisma`. Current schema có **69 models**.
+
+<Info>
+  **Database columns** là scalar fields được lưu trong table. **Prisma relation fields** dùng để điều hướng relation trong Prisma Client và không tạo thêm column mang cùng tên. Foreign-key columns vẫn nằm trong bảng **Database columns**.
+</Info>
+
+## Cách đọc field contract
+
+| Cột | Ý nghĩa |
+| --- | --- |
+| Field | Tên field trong Prisma model |
+| Prisma type | Type và nullability; hậu tố `?` là nullable, `[]` là relation/list |
+| Default/key/database attributes | `@id`, `@default`, `@unique`, native database type hoặc field mapping |
+| Relation attributes | Foreign-key fields, referenced fields và delete/update behavior do `@relation` khai báo |
+| Model constraints | Composite unique, index, primary key và database table mapping |
+
+Model tồn tại trong schema không tự chứng minh workflow tạo/sửa/xóa đã hoàn chỉnh. Xem [Domain model](/product-specs/domain-model) để biết model được executable code sử dụng trong domain nào.
+
+## Tenant và authorization
+
+Tòa nhà, tài khoản đăng nhập, hồ sơ nhân sự và grouped RBAC.
+
+<AccordionGroup>
+<Accordion title="Organizations — organizations">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `organization_key` | `String` | Không | `@unique @db.VarChar(64)` |
+| `name` | `String` | Không | `@db.VarChar(200)` |
+| `status` | `String` | Không | `@default("active") @db.VarChar(16)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `towers` | `Towers[]` | — |
+| `users` | `Users[]` | — |
+| `accounts` | `AuthUsers[]` | — |
+| `permission_groups` | `PermissionGroups[]` | — |
+| `audit_logs` | `OrganizationAuditLogs[]` | — |
+| `onboarding_requests` | `OrganizationOnboardingRequests[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `organizations`
+Không có model-level constraint ngoài field attributes trong Prisma schema.
+
+</Accordion>
+
+<Accordion title="Towers — towers">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `organization_id` | `Int?` | Có | — |
+| `tower_code` | `String` | Không | `@unique @db.VarChar(64)` |
+| `tower_name` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_users` | `Users[]` | `@relation("UserOrganizationTower")` |
+| `organization_assignments` | `UserBuildings[]` | `@relation("AssignmentOrganizationTower")` |
+| `user_buildings` | `UserBuildings[]` | — |
+| `apartments` | `Apartments[]` | — |
+| `residents` | `Residents[]` | — |
+| `receipts` | `Receipts[]` | — |
+| `feedback` | `Feedback[]` | — |
+| `posts` | `Posts[]` | — |
+| `polls` | `Polls[]` | — |
+| `comments` | `Comments[]` | — |
+| `serviceApartments` | `ServiceApartments[]` | — |
+| `services` | `Services[]` | — |
+| `vehicles` | `Vehicles[]` | — |
+| `vehicleCards` | `VehicleCards[]` | — |
+| `partners` | `Partners[]` | — |
+| `meterReadings` | `MeterReadings[]` | — |
+| `bills` | `Bills[]` | — |
+| `billLines` | `BillLines[]` | — |
+| `billingAdjustments` | `BillingAdjustments[]` | — |
+| `billingAdjustmentLines` | `BillingAdjustmentLines[]` | — |
+| `receiptAllocations` | `ReceiptAllocations[]` | — |
+| `excessPaymentLedger` | `ExcessPaymentLedger[]` | — |
+| `auditLogs` | `AuditLogs[]` | — |
+| `debits` | `Debits[]` | — |
+| `excessPayments` | `ExcessPayments[]` | — |
+| `accountingTransactions` | `AccountingTransactions[]` | — |
+| `receiptCategories` | `ReceiptCategories[]` | — |
+| `paymentCodes` | `PaymentCodes[]` | — |
+| `serviceRequests` | `ServiceRequests[]` | — |
+| `requestComments` | `RequestComments[]` | — |
+| `requestAttachments` | `RequestAttachments[]` | — |
+| `requestTasks` | `RequestTasks[]` | — |
+| `feedbackForms` | `FeedbackForms[]` | — |
+| `repairs` | `Repairs[]` | — |
+| `cashbook` | `Cashbook[]` | — |
+| `bankbook` | `Bankbook[]` | — |
+| `interactionReports` | `InteractionReports[]` | — |
+| `users` | `Users[]` | — |
+| `notifications` | `Notifications[]` | — |
+| `billingReminderCampaigns` | `BillingReminderCampaigns[]` | — |
+| `notificationEvents` | `NotificationEvents[]` | — |
+| `emailSuppressions` | `EmailSuppressions[]` | — |
+| `handbook` | `Handbook[]` | — |
+| `buildingPlaces` | `BuildingPlaces[]` | — |
+| `accountingAccounts` | `AccountingAccounts[]` | — |
+| `receiptForms` | `ReceiptForms[]` | — |
+| `appRatings` | `AppRatings[]` | — |
+| `serviceRatings` | `ServiceRatings[]` | — |
+| `configs` | `Configs[]` | — |
+| `cycleLocks` | `CycleLocks[]` | — |
+| `importHistory` | `ImportHistory[]` | — |
+| `importErrors` | `ImportErrors[]` | — |
+| `residentMemberships` | `ResidentApartmentMemberships[]` | — |
+| `residentImportItems` | `ResidentImportReconciliationItems[]` | — |
+| `aiKnowledgeDocuments` | `AiKnowledgeDocuments[]` | — |
+| `aiKnowledgeChunks` | `AiKnowledgeChunks[]` | — |
+| `aiChatThreads` | `AiChatThreads[]` | — |
+| `aiChatMessages` | `AiChatMessages[]` | — |
+| `aiRateLimits` | `AiRateLimits[]` | — |
+| `residentMiniappLinks` | `ResidentMiniappLinks[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `towers`
+- `@@unique([id, organization_id])`
+- `@@unique([tower_code, organization_id])`
+- `@@index([organization_id])`
+
+</Accordion>
+
+<Accordion title="AuthUsers — auth_users">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `organization_id` | `Int?` | Có | — |
+| `name` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@unique` |
+| `password_hash` | `String` | Không | `@default("")` |
+| `role` | `String` | Không | `@default("")` |
+| `permissions` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `allowed_tower_ids` | `String` | Không | `@default("")` |
+| `user_id` | `Int?` | Có | `@unique` |
+| `authorization_source` | `String` | Không | `@default("legacy_direct")` |
+| `account_type` | `String` | Không | `@default("legacy") @db.VarChar(16)` |
+| `must_change_password` | `Boolean` | Không | `@default(false)` |
+| `session_version` | `Int` | Không | `@default(1)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_user` | `Users?` | `@relation("AccountOrganizationUser", fields: [user_id, organization_id], references: [id, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+| `user` | `Users?` | `@relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+| `organization_audits` | `OrganizationAuditLogs[]` | — |
+| `onboarding_requests` | `OrganizationOnboardingRequests[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `auth_users`
+- `@@index([organization_id])`
+
+</Accordion>
+
+<Accordion title="Users — users">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `organization_id` | `Int?` | Có | — |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `employee_code` | `String` | Không | `@default("")` |
+| `name` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `department` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_accounts` | `AuthUsers[]` | `@relation("AccountOrganizationUser")` |
+| `organization_buildings` | `UserBuildings[]` | `@relation("AssignmentOrganizationUser")` |
+| `organization_groups` | `UserPermissionGroups[]` | `@relation("GroupAssignmentOrganizationUser")` |
+| `auth_user` | `AuthUsers?` | — |
+| `buildings` | `UserBuildings[]` | — |
+| `permission_groups` | `UserPermissionGroups[]` | — |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `organization_tower_record` | `Towers?` | `@relation("UserOrganizationTower", fields: [tower_id, organization_id], references: [tower_code, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+
+**Model constraints và mapping**
+
+- Database table: `users`
+- `@@unique([id, organization_id])`
+- `@@index([organization_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="UserBuildings — user_buildings">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `user_id` | `Int` | Không | — |
+| `tower_id` | `Int` | Không | — |
+| `organization_id` | `Int?` | Có | — |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization_user` | `Users?` | `@relation("AssignmentOrganizationUser", fields: [user_id, organization_id], references: [id, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_tower` | `Towers?` | `@relation("AssignmentOrganizationTower", fields: [tower_id, organization_id], references: [id, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+| `user` | `Users` | `@relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+| `tower` | `Towers` | `@relation(fields: [tower_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `user_buildings`
+- `@@id([user_id, tower_id])`
+- `@@index([organization_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="PermissionGroups — permission_groups">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `organization_id` | `Int?` | Có | — |
+| `name` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_assignments` | `UserPermissionGroups[]` | `@relation("GroupAssignmentOrganizationGroup")` |
+| `users` | `UserPermissionGroups[]` | — |
+| `permissions` | `PermissionGroupPermissions[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `permission_groups`
+- `@@unique([id, organization_id])`
+- `@@index([organization_id])`
+
+</Accordion>
+
+<Accordion title="Permissions — permissions">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `name` | `String` | Không | `@default("")` |
+| `route_name` | `String` | Không | `@unique` |
+| `icon` | `String` | Không | `@default("")` |
+| `has_menu` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `groups` | `PermissionGroupPermissions[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `permissions`
+Không có model-level constraint ngoài field attributes trong Prisma schema.
+
+</Accordion>
+
+<Accordion title="UserPermissionGroups — user_permission_groups">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `user_id` | `Int` | Không | — |
+| `permission_group_id` | `Int` | Không | — |
+| `organization_id` | `Int?` | Có | — |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization_user` | `Users?` | `@relation("GroupAssignmentOrganizationUser", fields: [user_id, organization_id], references: [id, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+| `organization_group` | `PermissionGroups?` | `@relation("GroupAssignmentOrganizationGroup", fields: [permission_group_id, organization_id], references: [id, organization_id], onDelete: Restrict, onUpdate: Restrict)` |
+| `user` | `Users` | `@relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+| `permission_group` | `PermissionGroups` | `@relation(fields: [permission_group_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `user_permission_groups`
+- `@@id([user_id, permission_group_id])`
+- `@@index([organization_id])`
+- `@@index([permission_group_id])`
+
+</Accordion>
+
+<Accordion title="PermissionGroupPermissions — permission_group_permissions">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `permission_group_id` | `Int` | Không | — |
+| `permission_id` | `Int` | Không | — |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `permission_group` | `PermissionGroups` | `@relation(fields: [permission_group_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+| `permission` | `Permissions` | `@relation(fields: [permission_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `permission_group_permissions`
+- `@@id([permission_group_id, permission_id])`
+- `@@index([permission_id])`
+
+</Accordion>
+
+<Accordion title="OrganizationAuditLogs — organization_audit_logs">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `BigInt` | Không | `@id @default(autoincrement())` |
+| `organization_id` | `Int?` | Có | — |
+| `actor_account_id` | `Int?` | Có | — |
+| `action` | `String` | Không | `@db.VarChar(100)` |
+| `target_type` | `String` | Không | `@db.VarChar(64)` |
+| `target_id` | `String` | Không | `@default("") @db.VarChar(100)` |
+| `payload_json` | `String` | Không | `@default("{}") @db.Text` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `actor_account` | `AuthUsers?` | `@relation(fields: [actor_account_id], references: [id], onDelete: SetNull, onUpdate: Restrict)` |
+
+**Model constraints và mapping**
+
+- Database table: `organization_audit_logs`
+- `@@index([organization_id, created_at])`
+- `@@index([actor_account_id, created_at])`
+
+</Accordion>
+
+<Accordion title="OrganizationOnboardingRequests — organization_onboarding_requests">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `String` | Không | `@id @default(uuid()) @db.Uuid` |
+| `idempotency_key` | `String` | Không | `@unique @db.VarChar(100)` |
+| `payload_hash` | `String` | Không | `@db.VarChar(64)` |
+| `organization_id` | `Int?` | Có | — |
+| `actor_account_id` | `Int` | Không | — |
+| `status` | `String` | Không | `@default("processing") @db.VarChar(16)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `completed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `organization` | `Organizations?` | `@relation(fields: [organization_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+| `actor_account` | `AuthUsers` | `@relation(fields: [actor_account_id], references: [id], onDelete: Restrict, onUpdate: Restrict)` |
+
+**Model constraints và mapping**
+
+- Database table: `organization_onboarding_requests`
+- `@@index([organization_id])`
+- `@@index([actor_account_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Căn hộ, cư dân và phương tiện
+
+Căn hộ, hồ sơ cư dân, membership, reconciliation import và phương tiện.
+
+<AccordionGroup>
+<Accordion title="Apartments — apartments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `name` | `String` | Không | `@default("")` |
+| `code` | `String` | Không | `@default("")` |
+| `owner` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `group_name` | `String` | Không | `@default("")` |
+| `floor` | `String` | Không | `@default("")` |
+| `area` | `Decimal?` | Có | `@db.Decimal(18, 3)` |
+| `occupancy_status` | `String` | Không | `@default("")` |
+| `management_service` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `resident_memberships` | `ResidentApartmentMemberships[]` | — |
+| `vehicles` | `Vehicles[]` | — |
+| `residentImportItems` | `ResidentImportReconciliationItems[]` | — |
+| `residentMiniappLinks` | `ResidentMiniappLinks[]` | — |
+| `bills` | `Bills[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `apartments`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Residents — residents">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `name` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `mobile` | `String` | Không | `@default("")` |
+| `birthday` | `DateTime?` | Có | `@db.Date` |
+| `apartment` | `String` | Không | `@default("")` |
+| `mobile_active` | `String` | Không | `@default("")` |
+| `billing_email_enabled` | `Boolean` | Không | `@default(false)` |
+| `billing_email_updated_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `billing_email_updated_by` | `String` | Không | `@default("")` |
+| `gender` | `String` | Không | `@default("")` |
+| `address` | `String` | Không | `@default("")` |
+| `identity_document_number` | `String` | Không | `@default("")` |
+| `identity_issued_date` | `DateTime?` | Có | `@db.Date` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `notifications` | `Notifications[]` | — |
+| `apartment_memberships` | `ResidentApartmentMemberships[]` | — |
+| `import_reconciliation_items` | `ResidentImportReconciliationItems[]` | — |
+| `miniapp_links` | `ResidentMiniappLinks[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `residents`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+- `@@index([tower_id, apartment])`
+
+</Accordion>
+
+<Accordion title="ResidentApartmentMemberships — resident_apartment_memberships">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `resident_id` | `Int` | Không | — |
+| `apartment_id` | `Int` | Không | — |
+| `relationship_code` | `String` | Không | — |
+| `move_in_date` | `DateTime?` | Có | `@db.Date` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `resident_record` | `Residents` | `@relation(fields: [resident_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `apartment_record` | `Apartments` | `@relation(fields: [apartment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `resident_apartment_memberships`
+- `@@unique([resident_id, apartment_id])`
+- `@@index([tower_id, apartment_id])`
+- `@@index([tower_id, resident_id])`
+
+</Accordion>
+
+<Accordion title="ResidentImportReconciliationItems — resident_import_reconciliation_items">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `import_id` | `Int` | Không | — |
+| `row_number` | `Int` | Không | — |
+| `resident_snapshot_json` | `String` | Không | `@default("{}")` |
+| `raw_apartment_code` | `String` | Không | `@default("")` |
+| `raw_relationship_code` | `String` | Không | `@default("")` |
+| `raw_move_in_date` | `String` | Không | `@default("")` |
+| `apartment_candidate_id` | `Int?` | Có | — |
+| `selected_existing_resident_id` | `Int?` | Có | — |
+| `resolution_mode` | `String?` | Có | — |
+| `reason_codes_json` | `String` | Không | `@default("[]")` |
+| `reason_message` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("pending")` |
+| `resolved_by` | `String` | Không | `@default("")` |
+| `resolved_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `rejected_by` | `String` | Không | `@default("")` |
+| `rejected_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `import_record` | `ImportHistory` | `@relation(fields: [import_id, tower_id], references: [id, tower_id], onDelete: Cascade, onUpdate: Cascade)` |
+| `apartment_candidate` | `Apartments?` | `@relation(fields: [apartment_candidate_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `selected_existing_resident` | `Residents?` | `@relation(fields: [selected_existing_resident_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `resident_import_reconciliation_items`
+- `@@unique([import_id, row_number])`
+- `@@index([tower_id, status, id])`
+- `@@index([tower_id, apartment_candidate_id])`
+- `@@index([tower_id, selected_existing_resident_id])`
+
+</Accordion>
+
+<Accordion title="ResidentMiniappLinks — resident_miniapp_links">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `zalo_user_id` | `String` | Không | `@db.VarChar(128)` |
+| `zalo_display_name` | `String` | Không | `@default("")` |
+| `verified_phone` | `String` | Không | `@db.VarChar(32)` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `apartment_id` | `Int` | Không | — |
+| `resident_id` | `Int?` | Có | — |
+| `relationship_code` | `String` | Không | `@default("other")` |
+| `status` | `String` | Không | `@default("pending")` |
+| `rejection_reason` | `String` | Không | `@default("")` |
+| `reviewed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `reviewed_by` | `String` | Không | `@default("")` |
+| `revoked_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `revoked_by` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `apartment_record` | `Apartments` | `@relation(fields: [apartment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `resident_record` | `Residents?` | `@relation(fields: [resident_id], references: [id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `resident_miniapp_links`
+- `@@unique([zalo_user_id, apartment_id])`
+- `@@index([tower_id, status, created_at])`
+- `@@index([resident_id])`
+
+</Accordion>
+
+<Accordion title="Vehicles — vehicles">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `apartment` | `String` | Không | `@default("")` |
+| `name` | `String` | Không | `@default("")` |
+| `type` | `String` | Không | `@default("")` |
+| `plate` | `String` | Không | `@default("")` |
+| `card_code` | `String` | Không | `@default("")` |
+| `fee` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `apartment_id` | `Int?` | Có | — |
+| `service_id` | `Int?` | Có | — |
+| `description` | `String` | Không | `@default("")` |
+| `billing_start_date` | `DateTime?` | Có | `@db.Date` |
+| `billing_end_date` | `DateTime?` | Có | `@db.Date` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `apartment_record` | `Apartments?` | `@relation(fields: [apartment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `service_record` | `Services?` | `@relation(fields: [service_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `service_assignments` | `ServiceApartments[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `vehicles`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+- `@@index([tower_id, apartment_id, status])`
+- `@@index([tower_id, service_id])`
+
+</Accordion>
+
+<Accordion title="VehicleCards — vehicle_cards">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `code` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `vehicle` | `String` | Không | `@default("")` |
+| `plate` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `vehicle_cards`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Dịch vụ và cấu hình thu phí
+
+Dịch vụ, assignment, chỉ số, đối tác, danh mục thu và khóa kỳ.
+
+<AccordionGroup>
+<Accordion title="Services — services">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `name` | `String` | Không | `@default("")` |
+| `code` | `String` | Không | `@default("")` |
+| `cycle` | `String` | Không | `@default("")` |
+| `due_day` | `Int?` | Có | — |
+| `status` | `String` | Không | `@default("")` |
+| `in_use` | `String` | Không | `@default("")` |
+| `service_type` | `String` | Không | `@default("")` |
+| `fixed_amount` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+| `unit_price` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `vehicles` | `Vehicles[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `services`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ServiceApartments — service_apartments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `vehicle_id` | `Int?` | Có | — |
+| `apartment` | `String` | Không | `@default("")` |
+| `service` | `String` | Không | `@default("")` |
+| `code` | `String` | Không | `@default("")` |
+| `next_fee_date` | `DateTime?` | Có | `@db.Date` |
+| `status` | `String` | Không | `@default("")` |
+| `start_date` | `DateTime?` | Có | `@db.Date` |
+| `end_date` | `DateTime?` | Có | `@db.Date` |
+| `amount_override` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `vehicle_record` | `Vehicles?` | `@relation(fields: [vehicle_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `service_apartments`
+- `@@index([tower_id])`
+- `@@index([tower_id, vehicle_id])`
+
+</Accordion>
+
+<Accordion title="Partners — partners">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `name` | `String` | Không | `@default("")` |
+| `mobile` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `address` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `partners`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="MeterReadings — meter_readings">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `apartment` | `String` | Không | `@default("")` |
+| `service` | `String` | Không | `@default("")` |
+| `start_index` | `Decimal` | Không | `@default(0) @db.Decimal(18, 3)` |
+| `end_index` | `Decimal` | Không | `@default(0) @db.Decimal(18, 3)` |
+| `usage` | `Decimal` | Không | `@default(0) @db.Decimal(18, 3)` |
+| `closing_date` | `DateTime` | Không | `@db.Date` |
+| `period` | `String` | Không | `@default("")` |
+| `created_by` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `image_key` | `String` | Không | `@default("")` |
+| `image_name` | `String` | Không | `@default("")` |
+| `image_type` | `String` | Không | `@default("")` |
+| `image_size` | `Int?` | Có | — |
+| `image_etag` | `String` | Không | `@default("")` |
+| `image_uploaded_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `image_uploaded_by` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `meter_readings`
+- `@@index([tower_id])`
+- `@@index([tower_id, period])`
+
+</Accordion>
+
+<Accordion title="ReceiptCategories — receipt_categories">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `code` | `String` | Không | `@default("")` |
+| `name` | `String` | Không | `@default("")` |
+| `type` | `String` | Không | `@default("")` |
+| `created_by` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `receipt_categories`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="PaymentCodes — payment_codes">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `code` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `bank` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `payment_codes`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="CycleLocks — cycle_locks">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `cycle_name` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `cycle_locks`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Công nợ, thu chi và sổ quỹ
+
+Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch và audit.
+
+<AccordionGroup>
+<Accordion title="Bills — bills">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `bill_code` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `cycle` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `apartment_id` | `Int?` | Có | — |
+| `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `current_amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `paid` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `debt` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `approved_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `due_date` | `DateTime` | Không | `@db.Date` |
+| `approved_by` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `version` | `Int` | Không | `@default(1)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `apartment_record` | `Apartments?` | `@relation(fields: [apartment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `lines` | `BillLines[]` | — |
+| `allocations` | `ReceiptAllocations[]` | — |
+| `adjustments` | `BillingAdjustments[]` | — |
+| `adjustmentLines` | `BillingAdjustmentLines[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `bills`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+- `@@index([tower_id, cycle])`
+- `@@index([tower_id, apartment_id, status, cycle])`
+
+</Accordion>
+
+<Accordion title="BillLines — bill_lines">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `bill_id` | `Int` | Không | — |
+| `line_no` | `Int` | Không | — |
+| `service_code` | `String` | Không | `@default("")` |
+| `service_name` | `String` | Không | `@default("")` |
+| `fee_type` | `String` | Không | `@default("")` |
+| `quantity` | `Decimal` | Không | `@default(0) @db.Decimal(18, 3)` |
+| `unit_price` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `discount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `current_amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `paid` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `debt` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `version` | `Int` | Không | `@default(1)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `allocations` | `ReceiptAllocations[]` | — |
+| `adjustmentLines` | `BillingAdjustmentLines[]` | — |
+| `bill` | `Bills` | `@relation(fields: [bill_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `bill_lines`
+- `@@unique([id, tower_id])`
+- `@@unique([id, bill_id, tower_id])`
+- `@@index([tower_id, bill_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="BillingAdjustments — billing_adjustments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `adjustment_code` | `String` | Không | — |
+| `source_bill_id` | `Int` | Không | — |
+| `accounting_date` | `DateTime` | Không | `@db.Date` |
+| `accounting_period` | `String` | Không | — |
+| `reason` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("draft")` |
+| `delta_amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `debt_effect` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `credit_effect` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `created_by` | `String` | Không | `@default("")` |
+| `approved_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `approved_by` | `String` | Không | `@default("")` |
+| `cancelled_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `cancelled_by` | `String` | Không | `@default("")` |
+| `version` | `Int` | Không | `@default(1)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `source_bill` | `Bills` | `@relation(fields: [source_bill_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `lines` | `BillingAdjustmentLines[]` | — |
+| `excess_ledger` | `ExcessPaymentLedger[]` | — |
+| `allocations` | `ReceiptAllocations[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `billing_adjustments`
+- `@@unique([id, tower_id])`
+- `@@unique([tower_id, adjustment_code])`
+- `@@index([tower_id, source_bill_id])`
+- `@@index([tower_id, status])`
+
+</Accordion>
+
+<Accordion title="BillingAdjustmentLines — billing_adjustment_lines">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `adjustment_id` | `Int` | Không | — |
+| `source_bill_id` | `Int` | Không | — |
+| `source_bill_line_id` | `Int` | Không | — |
+| `before_quantity` | `Decimal` | Không | `@db.Decimal(18, 3)` |
+| `after_quantity` | `Decimal` | Không | `@db.Decimal(18, 3)` |
+| `before_unit_price` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `after_unit_price` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `before_discount` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `after_discount` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `before_amount` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `after_amount` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `delta_amount` | `Decimal` | Không | `@db.Decimal(18, 2)` |
+| `debt_effect` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `credit_effect` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `adjustment` | `BillingAdjustments` | `@relation(fields: [adjustment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `source_bill` | `Bills` | `@relation(fields: [source_bill_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `source_bill_line` | `BillLines` | `@relation(fields: [source_bill_line_id, source_bill_id, tower_id], references: [id, bill_id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `billing_adjustment_lines`
+- `@@index([tower_id, adjustment_id])`
+- `@@index([tower_id, source_bill_id])`
+- `@@index([tower_id, source_bill_line_id])`
+
+</Accordion>
+
+<Accordion title="Receipts — receipts">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `receipt_code` | `String` | Không | `@default("")` |
+| `voucher_type` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `method` | `String` | Không | `@default("")` |
+| `category` | `String` | Không | `@default("")` |
+| `address` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `created_by` | `String` | Không | `@default("")` |
+| `accounting_date` | `DateTime` | Không | `@db.Date` |
+| `payer` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `cancelled_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `cancelled_by` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `allocations` | `ReceiptAllocations[]` | — |
+| `excess_ledger` | `ExcessPaymentLedger[]` | — |
+| `cashbook_entries` | `Cashbook[]` | — |
+| `bankbook_entries` | `Bankbook[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `receipts`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+- `@@index([tower_id, accounting_date])`
+
+</Accordion>
+
+<Accordion title="ReceiptAllocations — receipt_allocations">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `receipt_id` | `Int?` | Có | — |
+| `adjustment_id` | `Int?` | Có | — |
+| `bill_id` | `Int` | Không | — |
+| `bill_line_id` | `Int` | Không | — |
+| `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `accounting_date` | `DateTime` | Không | `@db.Date` |
+| `reversed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `receipt` | `Receipts?` | `@relation(fields: [receipt_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `adjustment` | `BillingAdjustments?` | `@relation(fields: [adjustment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `bill` | `Bills` | `@relation(fields: [bill_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `bill_line` | `BillLines` | `@relation(fields: [bill_line_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `receipt_allocations`
+- `@@index([tower_id, receipt_id])`
+- `@@index([tower_id, adjustment_id])`
+- `@@index([tower_id])`
+- `@@index([tower_id, bill_id])`
+- `@@index([tower_id, bill_line_id])`
+
+</Accordion>
+
+<Accordion title="ExcessPaymentLedger — excess_payment_ledger">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `receipt_id` | `Int?` | Có | — |
+| `adjustment_id` | `Int?` | Có | — |
+| `apartment` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `period` | `String` | Không | `@default("")` |
+| `service` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `increase` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `decrease` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `receipt_record` | `Receipts?` | `@relation(fields: [receipt_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `adjustment_record` | `BillingAdjustments?` | `@relation(fields: [adjustment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `excess_payment_ledger`
+- `@@index([tower_id, apartment])`
+- `@@index([tower_id])`
+- `@@index([tower_id, adjustment_id])`
+
+</Accordion>
+
+<Accordion title="Debits — debits">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `customer_code` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `service` | `String` | Không | `@default("")` |
+| `opening_balance` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `arising` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `paid` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `closing_balance` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `debits`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ExcessPayments — excess_payments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `apartment` | `String` | Không | `@default("")` |
+| `customer` | `String` | Không | `@default("")` |
+| `service` | `String` | Không | `@default("")` |
+| `current_amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `status` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `excess_payments`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="AccountingTransactions — accounting_transactions">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `status` | `String` | Không | `@default("")` |
+| `accounting_info` | `String` | Không | `@default("")` |
+| `transaction_info` | `String` | Không | `@default("")` |
+| `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `created_at` | `DateTime` | Không | `@db.Date` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `accounting_transactions`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Cashbook — cashbook">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `date` | `DateTime` | Không | `@db.Date` |
+| `description` | `String` | Không | `@default("")` |
+| `receipt` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `payment` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `balance` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `receipt_id` | `Int?` | Có | — |
+| `entry_type` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `receipt_record` | `Receipts?` | `@relation(fields: [receipt_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `cashbook`
+- `@@index([tower_id])`
+- `@@index([tower_id, receipt_id])`
+- `@@index([tower_id, date])`
+
+</Accordion>
+
+<Accordion title="Bankbook — bankbook">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `date` | `DateTime` | Không | `@db.Date` |
+| `bank` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `receipt` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `payment` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `balance` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
+| `receipt_id` | `Int?` | Có | — |
+| `entry_type` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `receipt_record` | `Receipts?` | `@relation(fields: [receipt_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `bankbook`
+- `@@index([tower_id])`
+- `@@index([tower_id, receipt_id])`
+- `@@index([tower_id, date])`
+
+</Accordion>
+
+<Accordion title="AuditLogs — audit_logs">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `actor` | `String` | Không | `@default("")` |
+| `action` | `String` | Không | `@default("")` |
+| `target_type` | `String` | Không | `@default("")` |
+| `target_id` | `String` | Không | `@default("")` |
+| `period` | `String` | Không | `@default("")` |
+| `before_summary` | `String` | Không | `@default("")` |
+| `after_summary` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `audit_logs`
+- `@@index([tower_id, period])`
+- `@@index([tower_id, target_type, target_id, created_at])`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Tương tác cư dân
+
+Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và đánh giá.
+
+<AccordionGroup>
+<Accordion title="Feedback — feedback">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `content` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `department` | `String` | Không | `@default("")` |
+| `author` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `version` | `Int` | Không | `@default(1)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `feedback`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Posts — posts">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `hashtag` | `String` | Không | `@default("")` |
+| `category` | `String` | Không | `@default("")` |
+| `author` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `posts`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Polls — polls">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `question` | `String` | Không | `@default("")` |
+| `post_title` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `polls`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Comments — comments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `post_title` | `String` | Không | `@default("")` |
+| `content` | `String` | Không | `@default("")` |
+| `author` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `comments`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ServiceRequests — service_requests">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `request_type` | `String` | Không | `@default("")` |
+| `details` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `author` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `note` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `version` | `Int` | Không | `@default(1)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `service_requests`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="RequestComments — request_comments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `subject_type` | `String` | Không | `@default("")` |
+| `subject_id` | `String` | Không | `@default("")` |
+| `content` | `String` | Không | `@default("")` |
+| `author` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `request_comments`
+- `@@index([tower_id, subject_type, subject_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="RequestAttachments — request_attachments">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `subject_type` | `String` | Không | `@default("")` |
+| `subject_id` | `String` | Không | `@default("")` |
+| `file_name` | `String` | Không | `@default("")` |
+| `mime_type` | `String` | Không | `@default("")` |
+| `size` | `Int` | Không | — |
+| `data_base64` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `request_attachments`
+- `@@index([tower_id, subject_type, subject_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="RequestTasks — request_tasks">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `subject_type` | `String` | Không | `@default("")` |
+| `subject_id` | `String` | Không | `@default("")` |
+| `title` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `assignee` | `String` | Không | `@default("")` |
+| `due_date` | `DateTime?` | Có | `@db.Date` |
+| `status` | `String` | Không | `@default("")` |
+| `created_by` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `request_tasks`
+- `@@index([tower_id, subject_type, subject_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="FeedbackForms — feedback_forms">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `description` | `String` | Không | `@default("")` |
+| `content` | `String` | Không | `@default("")` |
+| `file_name` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `feedback_forms`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Repairs — repairs">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `content` | `String` | Không | `@default("")` |
+| `contractor` | `String` | Không | `@default("")` |
+| `apartment` | `String` | Không | `@default("")` |
+| `registrant` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `start_date` | `DateTime?` | Có | `@db.Date` |
+| `end_date` | `DateTime?` | Có | `@db.Date` |
+| `attachment_name` | `String` | Không | `@default("")` |
+| `attachment_type` | `String` | Không | `@default("")` |
+| `attachment_size` | `Int?` | Có | — |
+| `attachment_data` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `repairs`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="InteractionReports — interaction_reports">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `metric` | `String` | Không | `@default("")` |
+| `total` | `Int` | Không | `@default(0)` |
+| `month` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `interaction_reports`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="AppRatings — app_ratings">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `time` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `tower` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `score` | `Decimal?` | Có | `@db.Decimal(5, 2)` |
+| `comment` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `app_ratings`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ServiceRatings — service_ratings">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `staff` | `String` | Không | `@default("")` |
+| `department` | `String` | Không | `@default("")` |
+| `phone` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `total_score` | `Decimal?` | Có | `@db.Decimal(10, 2)` |
+| `rating_count` | `Int` | Không | `@default(0)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `service_ratings`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Nhắc công nợ và email
+
+Campaign, notification job, provider event và suppression.
+
+<AccordionGroup>
+<Accordion title="BillingReminderCampaigns — billing_reminder_campaigns">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `request_id` | `String` | Không | — |
+| `requested_by` | `String` | Không | `@default("")` |
+| `selection_mode` | `String` | Không | `@default("")` |
+| `filters_json` | `String` | Không | `@default("{}")` |
+| `snapshot_hash` | `String` | Không | `@default("")` |
+| `apartment_count` | `Int` | Không | `@default(0)` |
+| `recipient_count` | `Int` | Không | `@default(0)` |
+| `skipped_count` | `Int` | Không | `@default(0)` |
+| `status` | `String` | Không | `@default("queued")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `notifications` | `Notifications[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `billing_reminder_campaigns`
+- `@@unique([tower_id, request_id])`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id, created_at])`
+
+</Accordion>
+
+<Accordion title="Notifications — notifications">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `subject` | `String` | Không | `@default("")` |
+| `recipient` | `String` | Không | `@default("")` |
+| `channel` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `campaign_id` | `Int?` | Có | — |
+| `resident_id` | `Int?` | Có | — |
+| `apartment` | `String` | Không | `@default("")` |
+| `preview_balance` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+| `send_balance` | `Decimal?` | Có | `@db.Decimal(18, 2)` |
+| `template_version` | `String` | Không | `@default("")` |
+| `provider_message_id` | `String` | Không | `@default("")` |
+| `idempotency_key` | `String?` | Có | `@unique` |
+| `attempt_count` | `Int` | Không | `@default(0)` |
+| `next_attempt_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `failure_code` | `String` | Không | `@default("")` |
+| `locked_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `locked_by` | `String` | Không | `@default("")` |
+| `sent_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `delivered_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `delayed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `bounced_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `complained_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `failed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `suppressed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `campaign_record` | `BillingReminderCampaigns?` | `@relation(fields: [campaign_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `resident_record` | `Residents?` | `@relation(fields: [resident_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `notifications`
+- `@@index([tower_id])`
+- `@@index([tower_id, status, next_attempt_at])`
+- `@@index([channel, status, next_attempt_at])`
+- `@@index([resident_id])`
+- `@@index([campaign_id, tower_id])`
+- `@@index([resident_id, tower_id])`
+- `@@index([provider_message_id])`
+
+</Accordion>
+
+<Accordion title="NotificationEvents — notification_events">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `provider_event_id` | `String` | Không | `@unique` |
+| `provider_message_id` | `String` | Không | `@default("")` |
+| `event_type` | `String` | Không | `@default("")` |
+| `event_at` | `DateTime` | Không | `@db.Timestamptz(3)` |
+| `payload_summary` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `notification_events`
+- `@@index([tower_id, provider_message_id])`
+
+</Accordion>
+
+<Accordion title="EmailSuppressions — email_suppressions">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `email` | `String` | Không | — |
+| `reason` | `String` | Không | `@default("")` |
+| `provider_event_id` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `email_suppressions`
+- `@@unique([tower_id, email])`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Import
+
+Preview, commit state và lỗi theo dòng của file import.
+
+<AccordionGroup>
+<Accordion title="ImportHistory — import_history">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `route_path` | `String` | Không | `@default("")` |
+| `module_key` | `String` | Không | `@default("")` |
+| `file_name` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `row_count` | `Int` | Không | `@default(0)` |
+| `preview_json` | `String` | Không | `@default("")` |
+| `error_message` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `committed_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `errors` | `ImportErrors[]` | — |
+| `resident_reconciliation_items` | `ResidentImportReconciliationItems[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `import_history`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ImportErrors — import_errors">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `import_id` | `Int` | Không | — |
+| `row_number` | `Int` | Không | — |
+| `column_name` | `String` | Không | `@default("")` |
+| `message` | `String` | Không | `@default("")` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `import` | `ImportHistory` | `@relation(fields: [import_id, tower_id], references: [id, tower_id], onDelete: Cascade, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `import_errors`
+- `@@index([tower_id, import_id])`
+- `@@index([tower_id])`
+
+</Accordion>
+</AccordionGroup>
+
+## Cấu hình, nội dung và landing
+
+Danh mục cấu hình còn lại, handbook, địa điểm và contact công khai.
+
+<AccordionGroup>
+<Accordion title="Buildings — buildings">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `name` | `String` | Không | `@default("")` |
+| `address` | `String` | Không | `@default("")` |
+| `manager` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+Không có Prisma relation field.
+
+**Model constraints và mapping**
+
+- Database table: `buildings`
+Không có model-level constraint ngoài field attributes trong Prisma schema.
+
+</Accordion>
+
+<Accordion title="Handbook — handbook">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `category` | `String` | Không | `@default("")` |
+| `partner` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `created_by` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `handbook`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="BuildingPlaces — building_places">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `name` | `String` | Không | `@default("")` |
+| `code` | `String` | Không | `@default("")` |
+| `floor` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `building_places`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="AccountingAccounts — accounting_accounts">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `account_code` | `String` | Không | `@default("")` |
+| `account_name` | `String` | Không | `@default("")` |
+| `debit_account` | `String` | Không | `@default("")` |
+| `credit_account` | `String` | Không | `@default("")` |
+| `updated_by` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `accounting_accounts`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="ReceiptForms — receipt_forms">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `type` | `String` | Không | `@default("")` |
+| `category` | `String` | Không | `@default("")` |
+| `email` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `receipt_forms`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="Configs — configs">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("")` |
+| `config_key` | `String` | Không | `@default("")` |
+| `config_value` | `String` | Không | `@default("")` |
+| `status` | `String` | Không | `@default("")` |
+| `visible` | `String` | Không | `@default("")` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `configs`
+- `@@index([tower_id])`
+
+</Accordion>
+
+<Accordion title="LandingContacts — landing_contacts">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `name` | `String` | Không | `@db.VarChar(160)` |
+| `phone` | `String` | Không | `@db.VarChar(32)` |
+| `email` | `String` | Không | `@db.VarChar(320)` |
+| `message` | `String` | Không | `@default("") @db.Text` |
+| `status` | `String` | Không | `@default("new") @db.VarChar(32)` |
+| `source` | `String` | Không | `@default("landing") @db.VarChar(64)` |
+| `locale` | `String` | Không | `@default("vi") @db.VarChar(8)` |
+| `privacy_version` | `String` | Không | `@db.VarChar(32)` |
+| `consented_at` | `DateTime` | Không | `@db.Timestamptz(3)` |
+| `marketing_consent` | `Boolean` | Không | `@default(false)` |
+| `retention_until` | `DateTime` | Không | `@db.Timestamptz(3)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+Không có Prisma relation field.
+
+**Model constraints và mapping**
+
+- Database table: `landing_contacts`
+- `@@index([status, created_at])`
+- `@@index([email])`
+- `@@index([retention_until])`
+
+</Accordion>
+</AccordionGroup>
+
+## AI knowledge và chat
+
+Tài liệu tri thức, đoạn nội dung, cuộc hội thoại, tin nhắn và giới hạn truy cập AI trong schema.
+
+<AccordionGroup>
+<Accordion title="AiKnowledgeDocuments — ai_knowledge_documents">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@db.VarChar(200)` |
+| `category` | `String` | Không | `@default("general") @db.VarChar(64)` |
+| `file_name` | `String` | Không | `@db.VarChar(255)` |
+| `mime_type` | `String` | Không | `@db.VarChar(160)` |
+| `content_hash` | `String` | Không | `@db.VarChar(64)` |
+| `status` | `String` | Không | `@default("ready") @db.VarChar(32)` |
+| `chunk_count` | `Int` | Không | `@default(0)` |
+| `created_by` | `String` | Không | `@db.VarChar(255)` |
+| `archived_by` | `String` | Không | `@default("") @db.VarChar(255)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+| `archived_at` | `DateTime?` | Có | `@db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `chunks` | `AiKnowledgeChunks[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `ai_knowledge_documents`
+- `@@unique([id, tower_id])`
+- `@@unique([tower_id, content_hash])`
+- `@@index([tower_id, status, created_at])`
+
+</Accordion>
+
+<Accordion title="AiKnowledgeChunks — ai_knowledge_chunks">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `document_id` | `Int` | Không | — |
+| `chunk_index` | `Int` | Không | — |
+| `content` | `String` | Không | `@db.Text` |
+| `embedding_json` | `String` | Không | `@default("[]") @db.Text` |
+| `token_estimate` | `Int` | Không | `@default(0)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `document_record` | `AiKnowledgeDocuments` | `@relation(fields: [document_id, tower_id], references: [id, tower_id], onDelete: Cascade, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `ai_knowledge_chunks`
+- `@@unique([document_id, chunk_index])`
+- `@@index([tower_id, document_id])`
+
+</Accordion>
+
+<Accordion title="AiChatThreads — ai_chat_threads">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `String` | Không | `@id @default(uuid()) @db.Uuid` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `title` | `String` | Không | `@default("") @db.VarChar(200)` |
+| `created_by` | `String` | Không | `@db.VarChar(255)` |
+| `model` | `String` | Không | `@db.VarChar(100)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `messages` | `AiChatMessages[]` | — |
+
+**Model constraints và mapping**
+
+- Database table: `ai_chat_threads`
+- `@@unique([id, tower_id])`
+- `@@index([tower_id, created_by, updated_at])`
+
+</Accordion>
+
+<Accordion title="AiChatMessages — ai_chat_messages">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `id` | `Int` | Không | `@id @default(autoincrement())` |
+| `thread_id` | `String` | Không | `@db.Uuid` |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `role` | `String` | Không | `@db.VarChar(16)` |
+| `content` | `String` | Không | `@db.Text` |
+| `citations_json` | `String` | Không | `@default("[]") @db.Text` |
+| `model` | `String` | Không | `@default("") @db.VarChar(100)` |
+| `response_id` | `String` | Không | `@default("") @db.VarChar(255)` |
+| `response_items_json` | `String` | Không | `@default("[]") @db.Text` |
+| `input_tokens` | `Int` | Không | `@default(0)` |
+| `output_tokens` | `Int` | Không | `@default(0)` |
+| `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
+| `thread_record` | `AiChatThreads` | `@relation(fields: [thread_id, tower_id], references: [id, tower_id], onDelete: Cascade, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `ai_chat_messages`
+- `@@index([thread_id, created_at])`
+- `@@index([tower_id, created_at])`
+
+</Accordion>
+
+<Accordion title="AiRateLimits — ai_rate_limits">
+
+**Database columns**
+
+| Field | Prisma type | Nullable | Default/key/database attributes |
+| --- | --- | --- | --- |
+| `tower_id` | `String` | Không | `@db.VarChar(64)` |
+| `actor` | `String` | Không | `@db.VarChar(255)` |
+| `scope` | `String` | Không | `@db.VarChar(64)` |
+| `window_start` | `DateTime` | Không | `@db.Timestamptz(3)` |
+| `request_count` | `Int` | Không | `@default(1)` |
+| `updated_at` | `DateTime` | Không | `@default(now()) @updatedAt @db.Timestamptz(3)` |
+
+**Prisma relation fields**
+
+| Field | Prisma type | Relation attributes |
+| --- | --- | --- |
+| `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Cascade, onUpdate: Cascade)` |
+
+**Model constraints và mapping**
+
+- Database table: `ai_rate_limits`
+- `@@id([tower_id, actor, scope, window_start])`
+- `@@index([window_start])`
+
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,59 @@
+---
+title: "Quy tắc nghiệp vụ"
+description: "Các invariant được validation và workflow code hiện tại thực thi."
+keywords: ["business rules", "invariants", "validation"]
+---
+
+Trang này chỉ ghi điều kiện mà server code thực sự kiểm tra. Mỗi rule mô tả lúc nào nó được áp dụng và kết quả khi điều kiện không đạt.
+
+## Phạm vi và phân quyền
+
+| ID | Khi | Server bắt buộc |
+| --- | --- | --- |
+| `BR-AUTH-01` | Đọc hoặc ghi dữ liệu quản trị | Dùng active tower từ authenticated session |
+| `BR-AUTH-02` | Gửi mutation | Có route access và CRUD/action permission tương ứng |
+| `BR-AUTH-03` | User không phải `super-admin` đăng nhập | Resolve được grouped authorization hợp lệ |
+| `BR-AUTH-04` | Tạo portal user và gán tòa nhà | Tòa nhà tồn tại, active và nằm trong actor scope; `createPortalUser()` cho `super-admin` bypass actor scope |
+| `BR-AUTH-05` | Sửa tower/group assignments của user | `saveUserRbacAssignments()` vẫn yêu cầu tower mới nằm trong `actorTowerCodes`, kể cả khi nhận `actorIsSuperAdmin` |
+| `BR-AUTH-06` | Resolve quyền từ nhiều group | Hợp nhất permission theo union; không có explicit deny hoặc ưu tiên group |
+| `BR-AUTH-07` | User được gán nhiều tower | Cùng một tập permission áp dụng tại mọi tower; permission theo từng tower: `Not Found` |
+
+## Cư dân và phương tiện
+
+| ID | Khi | Server bắt buộc |
+| --- | --- | --- |
+| `BR-RES-01` | Tạo cư dân | Dùng membership workflow; generic create bị chặn |
+| `BR-VEH-01` | Tạo hoặc sửa phương tiện | Dùng vehicle workflow; generic vehicle mutation bị chặn |
+| `BR-VEH-02` | Gắn dịch vụ phương tiện | Apartment và service tồn tại, active và thuộc tower |
+| `BR-REM-01` | Gửi reminder cho cư dân | Billing email consent còn bật, email còn khớp và không bị suppress |
+
+## Công nợ và thanh toán
+
+| ID | Khi | Server bắt buộc |
+| --- | --- | --- |
+| `BR-FIN-01` | Ghi dữ liệu vào kỳ | Kỳ không ở trạng thái khóa |
+| `BR-FIN-02` | Tính billing | Không có bill chưa cancelled/deleted cho cùng apartment và period |
+| `BR-FIN-03` | Duyệt, sửa, điều chỉnh hoặc thu bill | Bill có status được function tương ứng cho phép |
+| `BR-FIN-04` | Tạo receipt | `receipt amount = allocation total + excess amount` |
+| `BR-FIN-05` | Phân bổ vào bill line | Allocation không vượt debt hiện tại |
+| `BR-FIN-06` | Hủy receipt/adjustment | Không có dependency mới hơn mà code liệt kê |
+| `BR-FIN-07` | Parse monetary input | Giá trị hợp lệ cho decimal, không dùng floating-point persistence |
+
+<Warning>
+  **Phiếu thu phải khớp tiền phân bổ.** Tổng số tiền phiếu thu phải bằng tiền phân bổ vào các dòng công nợ cộng với tiền thừa. Mỗi khoản phân bổ không được vượt số còn nợ hiện tại của dòng.
+</Warning>
+
+<Info>
+  **Điều chỉnh nháp chưa thay đổi công nợ.** Khi duyệt, hệ thống mới cập nhật dòng phí và bảng kê; thao tác hủy còn phụ thuộc các khoản phát sinh sau đó.
+</Info>
+
+## Nhập dữ liệu và thông báo
+
+| ID | Khi | Server bắt buộc |
+| --- | --- | --- |
+| `BR-IMP-01` | Commit import | Preview thuộc đúng route và tower |
+| `BR-REM-02` | Queue reminder | Request ID unique theo tower và snapshot hash còn khớp |
+| `BR-REM-03` | Dispatch email | Re-check contact eligibility, suppression và current debt |
+| `BR-REM-04` | Nhận webhook | Verify signature; provider event ID chưa được xử lý |
+
+Các transition tương ứng nằm tại [State machines](/product-specs/state-machines); entry points nằm tại [Workflow specifications](/product-specs/workflow-specifications).

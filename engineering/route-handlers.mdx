@@ -1,0 +1,101 @@
+---
+title: "Route handlers"
+description: "Server handler patterns, guards và response boundaries hiện tại."
+keywords: ["route handlers", "Next.js", "authorization"]
+---
+
+Route handler là ranh giới tin cậy giữa browser hoặc provider bên ngoài với application services. Source có 28 handler files; [Route catalog](/reference/route-catalog) liệt kê đầy đủ URL và method.
+
+## Trình tự kiểm tra một admin mutation
+
+<Steps>
+  <Step title="Kiểm tra nguồn request">
+    Handler có mutation kiểm tra same-origin khi gọi `isSameOriginRequest()`.
+  </Step>
+  <Step title="Xác thực phiên">
+    `getAuthenticatedUserFromRequest()` trả user cùng active tower và permission set.
+  </Step>
+  <Step title="Kiểm tra quyền">
+    Handler kiểm tra route access, sau đó kiểm tra CRUD hoặc specialized action tùy intent.
+  </Step>
+  <Step title="Giới hạn và parse input">
+    Upload, reminder và webhook dùng giới hạn body riêng. Handler chỉ chuyển input đã parse sang service.
+  </Step>
+  <Step title="Gọi persistence path">
+    Generic module dùng repository; workflow phức tạp dùng domain service và transaction riêng.
+  </Step>
+</Steps>
+
+## Chọn handler khi phát triển
+
+| Loại thay đổi | Entry point | Không dùng khi |
+| --- | --- | --- |
+| CRUD danh mục | `POST /admin/mutate` | Module bị policy hoặc handler chặn |
+| Bảng kê/phiếu thu/điều chỉnh | `POST /admin/workflow` | Không có financial intent tương ứng |
+| Cư dân–căn hộ | `/admin/resident-memberships` | Chỉ sửa field hồ sơ cư dân hiện có |
+| Feedback/yêu cầu | `/admin/resident-workflow` | Module không phải feedback/service request |
+| Phương tiện | `/admin/apartment-vehicles` | Generic vehicle mutation |
+| RBAC | `/admin/rbac` | Thay đổi user field không liên quan linked account |
+| Import | `/admin/import` | Export hoặc download template |
+| Reminder | `/admin/debt-reminders` | Gửi email trực tiếp; route này chỉ queue |
+
+## Hợp đồng request cho tính công nợ và lập phiếu thu
+
+`POST /admin/workflow` nhận dữ liệu biểu mẫu qua `request.formData()`. Hai intent dưới đây dùng cùng handler; `intent` chọn thao tác, còn `returnTo` phải trỏ đến màn hình được phép cho thao tác đó. Tòa nhà và người thực hiện được lấy từ phiên qua `activeTowerId` và `email`.
+
+<Tabs>
+  <Tab title="Tính công nợ">
+    | Trường | Cách handler và service sử dụng |
+    | --- | --- |
+    | `intent` | Giá trị `calculate-billing` |
+    | `returnTo` | Màn hình `/admin/electric-meter` |
+    | `period` | Kỳ được kiểm tra bởi `requirePeriod()` |
+    | `dueDate` | Ngày hạn thanh toán được kiểm tra bởi `requireDate()` |
+    | `apartmentCodes` | Không bắt buộc; tách bằng khoảng trắng, dấu phẩy hoặc chấm phẩy; rỗng nghĩa là tất cả căn hộ đang hoạt động trong tòa nhà |
+
+    `calculateBillingPeriod()` tạo `Bills`, `BillLines` và `AuditLogs` trong một Prisma transaction. Response thành công chứa `data.notice = "billing-calculated"` và `data.count` là số bảng kê đã tạo.
+  </Tab>
+  <Tab title="Lập phiếu thu">
+    | Trường | Cách handler và service sử dụng |
+    | --- | --- |
+    | `intent` | Giá trị `create-receipt` |
+    | `returnTo` | Một trong `/admin/v2/bill/list-pay`, `/admin/v2/bill/x-wait-for-confirm`, `/admin/v2/receipt` |
+    | `apartment` | Căn hộ đang hoạt động trong tòa nhà của phiên |
+    | `amount` | Số tiền dương, bằng tổng phân bổ cộng tiền thừa |
+    | `method` | Hình thức được `normalizeMethod()` kiểm tra trong tòa nhà |
+    | `accountingDate` | Ngày xác định kỳ hạch toán cần kiểm tra mở |
+    | `payer`, `description` | Chuỗi bắt buộc, không được rỗng |
+    | `address` | Chuỗi được chuẩn hóa, không bắt buộc |
+    | `allocationLines` | Trường biểu mẫu chứa chuỗi JSON của danh sách `{ billLineId, amount }`; phải có trường này, nhưng danh sách có thể rỗng khi thu vào tiền thừa |
+    | `excessAmount` | Số không âm; mặc định 0 khi không truyền |
+    | `afterSubmit` | Giá trị `print` chuyển đích trả về sang phần chứng từ của phiếu vừa tạo |
+
+    `createReceiptWithAllocation()` ghi phiếu, phân bổ nếu có, cập nhật công nợ tương ứng, ghi sổ và audit log trong một transaction. Response thành công chứa `data.notice = "receipt-posted"`, `data.receipt` là mã phiếu và `data.excess` là tiền thừa.
+  </Tab>
+</Tabs>
+
+### Quyền, response và lỗi
+
+Handler kiểm tra nguồn request, phiên, màn hình nằm trong danh sách cho phép, quyền truy cập màn hình và quyền thao tác trước khi gọi service. Quyền thao tác là `calculate_billing` hoặc `create_receipt` tương ứng.
+
+| Trường hợp | HTTP và cấu trúc response |
+| --- | --- |
+| Thành công | 200; `{ success: true, redirectTo, data }` |
+| Nguồn request không hợp lệ | 403; `error.code` là `forbidden-origin` |
+| Chưa xác thực | 401; `error.code` là `unauthorized`, đích đăng nhập nằm trong `error.details.redirectTo` |
+| Màn hình hoặc quyền không hợp lệ | 403; `error.code` là `forbidden` |
+| Lỗi nghiệp vụ không được ánh xạ thành lỗi database | 400; `error.code` chứa thông báo lỗi, `error.message` là `Financial workflow request failed` |
+
+`jsonRedirect()` trả JSON chứa đích điều hướng, không phải HTTP 302. Lỗi database đi qua `mapDatabaseError()` và dùng mã/status từ bộ ánh xạ đó. Không áp dụng bảng response này cho mọi handler khác.
+
+Xem hướng dẫn [Tính công nợ](/finance/calculate-billing), [Lập phiếu thu](/finance/create-receipt) và [Use case và workflow](/product-specs/workflow-specifications) để đối chiếu hành vi với màn hình.
+
+## Response behavior
+
+Các route dùng ba kiểu response:
+
+- JSON success/error qua `api-response.ts`;
+- redirect kèm `notice` hoặc `error` cho form navigation;
+- raw file/stream response cho export và attachment.
+
+Không giả định mọi handler trả cùng schema. Not confirmed by current source code: một middleware authorization chung thay thế các checks trong handler.

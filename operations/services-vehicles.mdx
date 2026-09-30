@@ -1,0 +1,57 @@
+---
+title: "Dịch vụ và phương tiện"
+description: "Cách quản lý dịch vụ tòa nhà, phương tiện và chỉ số điện nước."
+keywords: ["services", "vehicles", "meter readings"]
+---
+
+Bạn dùng khu vực **Dịch vụ - phương tiện** để khai báo dịch vụ của tòa nhà, gắn dịch vụ cho căn hộ và quản lý phương tiện.
+
+## Các màn hình chính
+
+| Màn hình | Mục đích |
+| --- | --- |
+| **Dịch vụ tòa nhà** | Quản lý dịch vụ cố định, dịch vụ phương tiện và dịch vụ theo chỉ số |
+| **Căn hộ sử dụng dịch vụ** | Gắn dịch vụ với căn hộ |
+| **Quản lý phương tiện** | Thêm, sửa và xuất danh sách phương tiện |
+| **Chỉ số điện nước** | Ghi chỉ số đầu/cuối cho dịch vụ tính theo mức sử dụng |
+
+## Thêm phương tiện cho căn hộ
+
+<Steps>
+  <Step title="Mở chi tiết căn hộ">
+    Trong **Danh sách căn hộ**, chọn xem căn hộ cần thêm phương tiện.
+  </Step>
+  <Step title="Chọn Thêm phương tiện">
+    Nhập thông tin phương tiện và chọn dịch vụ phương tiện phù hợp.
+  </Step>
+  <Step title="Lưu">
+    Hệ thống kiểm tra căn hộ và dịch vụ, sau đó lưu phương tiện và đồng bộ dịch vụ của căn hộ.
+  </Step>
+</Steps>
+
+## Ghi chỉ số điện nước
+
+<Steps>
+  <Step title="Mở Chỉ số điện nước">
+    Chọn căn hộ, dịch vụ và tháng chốt số.
+  </Step>
+  <Step title="Nhập chỉ số">
+    Nhập chỉ số đầu, chỉ số cuối và ngày chốt. Hệ thống tính lượng tiêu thụ từ hai chỉ số.
+  </Step>
+  <Step title="Thêm ảnh nếu cần">
+    Ảnh JPEG, PNG hoặc WebP được lưu riêng; màn hình chỉ lưu metadata của ảnh cùng bản ghi chỉ số.
+  </Step>
+</Steps>
+
+## Xử lý lỗi
+
+| Khi gặp | Điều kiện source đang kiểm tra |
+| --- | --- |
+| Không lưu được phương tiện | Căn hộ và dịch vụ phải tồn tại, active và thuộc tòa nhà đang chọn. |
+| Không lưu được chỉ số | Dịch vụ phải là `metered`, kỳ phải mở và chỉ số cuối không được nhỏ hơn chỉ số đầu. |
+
+<Accordion title="Dành cho kỹ thuật">
+  Vehicle create/update dùng `/admin/apartment-vehicles`; generic mutation cho module `vehicles` bị chặn. Meter reading validation yêu cầu apartment/service hợp lệ, dịch vụ `metered`, kỳ mở và chỉ số cuối không nhỏ hơn chỉ số đầu.
+</Accordion>
+
+Xem object storage tại [Integrations](/engineering/integrations).

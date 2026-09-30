@@ -1,0 +1,49 @@
+---
+title: "Tạo điều chỉnh công nợ"
+description: "Cách tạo bản nháp điều chỉnh cho các dòng của một bảng kê."
+keywords: ["billing adjustment", "draft", "điều chỉnh công nợ"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền tạo điều chỉnh và đã chọn tòa nhà |
+| Kết quả | Tạo điều chỉnh `draft`; công nợ chưa thay đổi |
+
+## Trước khi thực hiện
+
+- Bảng kê thuộc active tower và đang ở trạng thái có thể thu hoặc `paid`.
+- Kỳ hạch toán điều chỉnh đang mở và không sớm hơn kỳ của bảng kê nguồn.
+- Các dòng điều chỉnh thuộc đúng bảng kê.
+- Nếu client gửi `expectedVersion`, version phải khớp bảng kê hiện tại.
+
+## Các bước
+
+<Steps>
+  <Step title="Chọn bảng kê và dòng phí">Nhập ngày hạch toán, lý do và giá trị mới cho từng dòng.</Step>
+  <Step title="Gửi yêu cầu">Hệ thống kiểm tra bảng kê, kỳ, phiên bản và từng dòng được chọn.</Step>
+  <Step title="Xem kết quả">Hệ thống lưu bản nháp gồm giá trị trước, giá trị sau và phần chênh lệch.</Step>
+</Steps>
+
+## Khi hệ thống không tạo bản nháp
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Bảng kê chưa được duyệt hoặc không còn trạng thái phù hợp | Không tạo điều chỉnh |
+| Kỳ điều chỉnh đã khóa | Không tạo dữ liệu |
+| Kỳ điều chỉnh sớm hơn kỳ bảng kê | Trả lỗi |
+| Bảng kê đã đổi version | Yêu cầu reload |
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:create_billing_adjustment`, người dùng có thể tạo bản nháp điều chỉnh cho các dòng của bảng kê hợp lệ.
+
+  ### Acceptance criteria
+
+  - **Given** bảng kê và kỳ hợp lệ, **when** gửi intent `create-adjustment`, **then** hệ thống tạo `BillingAdjustments`, `BillingAdjustmentLines` và `AuditLogs`.
+  - **Given** bảng kê đổi `version`, **when** tạo điều chỉnh, **then** hệ thống yêu cầu tải lại.
+  - **Given** bản nháp được tạo, **then** `Bills` và `BillLines` chưa thay đổi.
+
+  Các trường hợp này được kiểm tra trong `test/financial-workflows.test.ts`.
+</Accordion>

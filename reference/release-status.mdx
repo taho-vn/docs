@@ -1,0 +1,44 @@
+---
+title: "Tình trạng tính năng"
+description: "Tình trạng bản sửa nghiệp vụ ngày 30/09/2026 và các giới hạn cần theo dõi trước khi phát hành."
+keywords: ["release", "milestone", "feature status"]
+---
+
+## Bản sửa ngày 30/09/2026
+
+<Warning>
+  Các thay đổi nghiệp vụ dưới đây đã được kiểm tra trên source và PostgreSQL local cô lập. Bản sửa chưa được commit, chưa triển khai lên database vận hành và chưa hoàn tất UAT hoặc xác nhận phát hành. Không dùng bảng này để kết luận hệ vận hành đã có các hành vi mới.
+</Warning>
+
+| Mã | Thay đổi trong source ứng viên | Tình trạng phát hành |
+| --- | --- | --- |
+| RF-01–RF-04 | Tách giao diện Admin, module nghiệp vụ, hạ tầng và seed; thêm kiểm tra ranh giới kiến trúc. | Refactor đã commit tại `ddde0a7`; chưa có tag phát hành được xác nhận. |
+| FIX-A | API Resident Mini App chỉ trả bảng kê `approved`, `partially_paid`, `paid` của căn hộ đã liên kết trong đúng tòa nhà. Bộ lọc chạy trước giới hạn 24 bảng kê; tổng nợ tính trên toàn bộ bảng kê hợp lệ. | Source đã sửa; chưa phát hành. Không thay đổi giao diện Mini App trong bản sửa này. |
+| FIX-B/B2 | Giới hạn bước chuyển trạng thái phản ánh và yêu cầu dịch vụ; khóa bản ghi, kiểm tra phiên bản, chống lặp thao tác và ghi lịch sử trong cùng transaction. Các đường ghi generic không còn được cập nhật/xóa/nhập dữ liệu để bỏ qua workflow. | Source đã sửa; migration và nghiệm thu vận hành chưa hoàn tất. |
+| FIX-C/C0 | Thêm `bills.apartment_id`, ràng buộc căn hộ–tòa nhà và kiểm tra mã/ID; bổ sung lệnh kiểm kê, chạy thử và cập nhật ID cho bảng kê hiện hữu. | Schema và migration ở source ứng viên; dữ liệu vận hành chưa được kiểm kê, cập nhật và xác nhận. |
+
+<Info>
+  Kiểm thử được ghi trong release note: `yarn verify` đạt 475/475 trên source ứng viên và PostgreSQL cô lập. Kết quả này không xác nhận migration, dữ liệu hiện hữu hay luồng Zalo trên thiết bị thật.
+</Info>
+
+### Điều kiện còn lại trước khi công bố hành vi mới
+
+1. Review và commit bản sửa nghiệp vụ; chọn version hoặc tag phát hành.
+2. Thử migration workflow và bill identity trên bản sao dữ liệu đại diện; kiểm kê và xử lý các bảng kê chưa xác định được căn hộ.
+3. Hoàn tất cập nhật ID, đối soát dữ liệu tài chính và xác nhận ràng buộc trước khi dùng đường đọc bảng kê theo ID căn hộ.
+4. Nghiệm thu thao tác Admin và Resident Mini App trên thiết bị thật, sau đó xác nhận phát hành.
+
+## Các giới hạn tính năng khác
+
+| Khu vực | Thao tác trên giao diện | Tình trạng hiện tại |
+| --- | --- | --- |
+| Căn hộ sử dụng dịch vụ | **Import dịch vụ cho căn hộ** | Nút hiện thông báo; chưa có luồng nhập dữ liệu tương ứng. |
+| Căn hộ sử dụng dịch vụ | **Sắp xếp dịch vụ ưu tiên hạch toán** | Nút hiện thông báo; chưa có luồng lưu thứ tự tương ứng. |
+| Lập phiếu thu | **Nghiệp vụ thực hiện** và **Kiểu Phiếu** | Hai lựa chọn hiển thị trên form nhưng không được gửi tới handler lập phiếu thu dịch vụ. |
+| Quản lý người dùng | **Quản lý bộ phận** | Nút đang bị vô hiệu hóa. |
+| Cấu hình hệ thống | **Chọn mẫu bảng kê**, **Chọn mẫu phiếu thu** và **Lưu** trên thanh công cụ **Quản lý khóa kỳ** | Các nút hiện thông báo; thao tác **Thêm mới** và **Sửa** theo dòng là đường lưu hiện có. |
+| Nhắc công nợ | Tự chạy lệnh gửi theo lịch | Có lệnh gửi riêng; lịch tự động gọi lệnh này chưa được xác nhận trong source hiện tại. |
+
+<Info>
+  Khi đối chiếu release, kiểm tra lại cả thao tác trên giao diện và đường ghi dữ liệu trước khi đổi trạng thái một mục trong bảng.
+</Info>

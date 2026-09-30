@@ -1,0 +1,27 @@
+---
+title: "Environment variables"
+description: "Tên environment variables được current source đọc, không công bố values."
+keywords: ["environment variables", "configuration", "secrets"]
+---
+
+## Database và runtime
+
+`DATABASE_URL`, `DIRECT_URL`, `NODE_ENV`, `TAHO_DB_CONNECTION_TIMEOUT_MS`, `TAHO_DB_IDLE_TIMEOUT_MS`, `TAHO_DB_POOL_MAX`, `TAHO_DB_LOG_QUERIES`, `TAHO_ENABLE_DEMO_SEED`, `TAHO_JWT_SECRET`.
+
+## Email
+
+`TAHO_EMAIL_DELIVERY_ENABLED`, `TAHO_EMAIL_FROM`, `TAHO_EMAIL_REPLY_TO`, `TAHO_RESEND_API_KEY`, `TAHO_RESEND_WEBHOOK_SECRET`.
+
+## Object storage
+
+`TAHO_R2_ACCOUNT_ID`, `TAHO_R2_ACCESS_KEY_ID`, `TAHO_R2_SECRET_ACCESS_KEY`, `TAHO_R2_BUCKET_NAME`, `TAHO_R2_ENDPOINT`, `TAHO_R2_ALLOW_INSECURE_LOCAL_ENDPOINT`.
+
+Compatibility aliases được source đọc: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_ENDPOINT`.
+
+## Analytics và test tooling
+
+`NEXT_PUBLIC_GA_ID`, `TAHO_E2E_CHROME_PATH`, `TAHO_E2E_PORT`, `TAHO_E2E_RESULT_PATH`, `TAHO_E2E_SERVER_MODE`, `TAHO_PLAYWRIGHT_MODULE_PATH`, `TAHO_EVIDENCE_DIR`.
+
+Required/optional status phụ thuộc call path. Not confirmed by current source code: một bộ biến tối thiểu duy nhất cho mọi runtime mode.
+
+Xem integration consumers tại [Integrations](/engineering/integrations).

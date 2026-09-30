@@ -1,0 +1,69 @@
+---
+title: "Database"
+description: "PostgreSQL, Prisma client, migrations và repository boundaries hiện tại."
+keywords: ["PostgreSQL", "Prisma", "migrations", "repository"]
+---
+
+PostgreSQL lưu application state. Prisma cung cấp generated client; `@prisma/adapter-pg` nối Prisma với connection pool của `pg`.
+
+## Kết nối database
+
+```text
+DATABASE_URL
+→ src/core/db/prisma.ts
+→ pg Pool
+→ Prisma adapter
+→ generated Prisma Client
+```
+
+Pool size, connection timeout, idle timeout và query logging được đọc từ các biến `TAHO_DB_*`. Xem tên biến tại [Environment variables](/reference/environment-variables).
+
+## Ba cách source truy cập dữ liệu
+
+| Cách truy cập | Dùng cho | Đặc điểm |
+| --- | --- | --- |
+| Generic repository | Danh mục và CRUD quản trị | Module allowlist, tower scope, codec và validation chung |
+| Specialized service | Membership, vehicle, RBAC, reminder | Validation và transaction theo workflow |
+| Financial transaction | Billing, receipt, adjustment, excess | Lock/version/dependency checks và audit side effects |
+
+`src/core/db/database-store.ts` đăng ký các table delegate cho generic repository. Schema source ứng viên hiện có 69 models; một số relation và workflow model chỉ được service hoặc Prisma transaction truy cập.
+
+## Tenant boundary trong schema
+
+Tenant vận hành hiện tại là tòa nhà được nhận diện bằng `Towers.tower_code` và các field `tower_id` trên dữ liệu nghiệp vụ.
+
+| Nhóm model | Tenant shape hiện tại |
+| --- | --- |
+| Dữ liệu nghiệp vụ | Phần lớn có `tower_id` và relation tới `Towers.tower_code` |
+| User-to-tower assignment | `UserBuildings` nối `Users.id` với `Towers.id` |
+| Permission groups | `PermissionGroups`, `Permissions` và các bảng nối không có `tower_id` |
+| Authentication account | `AuthUsers` liên kết 1-1 với `Users`; không trực tiếp liên kết tower |
+
+Nhiều relation nghiệp vụ dùng composite key chứa `tower_id`, ví dụ resident–apartment, vehicle–apartment/service, bill–bill line và import reconciliation. Source ứng viên thêm relation `Bills.apartment_id` với `tower_id`. Migration tương ứng chưa được xác nhận triển khai trên database vận hành; xem [Tình trạng tính năng](/reference/release-status).
+
+Generic repository xác định table có tenant scope bằng việc kiểm tra table có column `tower_id`. List thêm tower filter; create sở hữu giá trị `tower_id`; get/update/delete kiểm tra tower của record.
+
+<Warning>
+  PostgreSQL Row-Level Security policy: `Not Found`. Tenant isolation hiện phụ thuộc vào handler, repository/service query và schema relations. Raw Prisma query mới không tự nhận tower filter.
+</Warning>
+
+## Thêm hoặc đổi dữ liệu
+
+<Steps>
+  <Step title="Sửa schema">
+    Cập nhật `prisma/schema.prisma`, gồm relation, index và database mapping cần thiết.
+  </Step>
+  <Step title="Tạo migration">
+    Migration được lưu dưới `prisma/migrations`. Hai migration của bản sửa ngày 30/09/2026 còn thuộc source ứng viên, chưa được xác nhận triển khai trên database vận hành.
+  </Step>
+  <Step title="Cập nhật access path">
+    Thêm delegate/repository validation hoặc specialized transaction tùy workflow. Không đưa financial tables vào generic write path.
+  </Step>
+  <Step title="Cập nhật tests và docs">
+    Kiểm tra codec, constraint, tower scope và affected workflow trước khi cập nhật Data dictionary.
+  </Step>
+</Steps>
+
+`prisma.config.ts` trỏ migration path tới `prisma/migrations` và seed command tới `prisma/seed.ts`. Existing README chỉ là bằng chứng phụ nếu khác executable config.
+
+Xem danh sách models tại [Data dictionary](/reference/data-dictionary).

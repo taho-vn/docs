@@ -1,0 +1,50 @@
+---
+title: "Duyệt bảng kê"
+description: "Cách chuyển một bảng kê nháp sang trạng thái approved."
+keywords: ["approve bill", "approved", "bảng kê"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền duyệt bảng kê và đã chọn tòa nhà |
+| Kết quả | Bảng kê chuyển sang `approved`; hệ thống lưu người duyệt, thời điểm và audit log |
+
+## Trước khi thực hiện
+
+- Bảng kê thuộc tòa nhà đang chọn.
+- Trạng thái là `draft` hoặc `waiting_confirmation`.
+- Kỳ của bảng kê đang mở.
+
+## Các bước
+
+<Steps>
+  <Step title="Chọn bảng kê">Chọn bảng kê cần duyệt.</Step>
+  <Step title="Duyệt">Hệ thống kiểm tra tòa nhà, trạng thái, kỳ và phiên bản hiện tại của bảng kê.</Step>
+  <Step title="Xem kết quả">Bảng kê chuyển sang `approved` nếu dữ liệu chưa thay đổi.</Step>
+</Steps>
+
+## Khi hệ thống không duyệt
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Không tìm thấy bảng kê trong tòa nhà đang chọn | Trả lỗi |
+| Trạng thái không phải `draft` hoặc `waiting_confirmation` | Không duyệt |
+| Kỳ đã khóa | Không duyệt |
+| Bảng kê đổi trong lúc duyệt | Yêu cầu reload trước khi thử lại |
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:approve_bill`, người dùng có thể chuyển bảng kê hợp lệ sang `approved`.
+
+  ### Acceptance criteria
+
+  - **Given** bảng kê thuộc `activeTowerId`, ở trạng thái hợp lệ và kỳ đang mở, **when** gửi intent `approve-bill`, **then** bảng kê chuyển sang `approved`.
+  - **Given** bảng kê đã đổi `version`, **when** duyệt, **then** request bị từ chối.
+  - **Given** kỳ đã khóa, **when** duyệt, **then** trạng thái bảng kê không đổi.
+
+  ### Dữ liệu và kiểm thử
+
+  Transaction cập nhật `Bills.status`, `approved_by`, `approved_at`, `version` và tạo `AuditLogs`. Kiểm thử concurrent approval nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

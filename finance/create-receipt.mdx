@@ -1,0 +1,80 @@
+---
+title: "Lập phiếu thu"
+description: "Cách tạo phiếu thu, phân bổ tiền vào công nợ và ghi nhận tiền thừa."
+keywords: ["create receipt", "ReceiptAllocations", "tiền thừa"]
+---
+
+Bạn ghi nhận tiền thu tại **Công nợ - thanh toán** → **Quản lý phiếu thu/chi** → **Lập phiếu thu**. Bạn có thể thanh toán các dòng công nợ đã duyệt hoặc ghi nhận toàn bộ khoản thu vào tiền thừa.
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền lập phiếu thu và đã chọn tòa nhà |
+| Kết quả | Tạo phiếu `posted`, phân bổ tiền, cập nhật công nợ và ghi sổ |
+
+## Trước khi thực hiện
+
+- Căn hộ `active` thuộc tòa nhà đang chọn.
+- Kỳ hạch toán đang mở.
+- Hình thức thanh toán hợp lệ cho tòa nhà.
+- Các dòng được chọn thuộc bảng kê có trạng thái cho phép thu.
+- Tổng tiền phiếu thu bằng tiền phân bổ cộng tiền thừa khai báo.
+
+## Các bước
+
+<Steps>
+  <Step title="Mở phiếu thu">Mở **Công nợ - thanh toán** → **Quản lý phiếu thu/chi**, rồi chọn **Lập phiếu thu**. Bạn cần quyền truy cập màn hình và quyền lập phiếu thu.</Step>
+  <Step title="Nhập thông tin">Chọn **Chọn căn hộ**, **Hình thức thu tiền**, kiểm tra **Người nộp tiền**, **Ngày hạch toán** và nhập **Nội dung thu tiền**. Bạn có thể sửa **Địa chỉ**.</Step>
+  <Step title="Chọn khoản thanh toán">Trong **Danh sách hóa đơn**, đánh dấu các dòng cần thu và nhập số tiền ở cột **Thanh toán**. Nếu không chọn dòng nào, nhập **Tiền thừa** lớn hơn 0 để ghi nhận toàn bộ khoản thu vào tiền thừa.</Step>
+  <Step title="Kiểm tra tổng tiền">**Số tiền** và **Tổng thanh toán** được tính tự động. Khi đã chọn dòng công nợ, **Tiền thừa** cũng được tính tự động từ phần thanh toán vượt số còn nợ. Bấm **Xem trước** để kiểm tra căn hộ, người nộp, tổng thanh toán và số khoản đã chọn.</Step>
+  <Step title="Thu tiền">Bấm **Thu tiền** để ghi phiếu hoặc **Thu và in** để ghi phiếu rồi mở phần chứng từ của phiếu vừa tạo. Khi thành công, hệ thống hiển thị **Đã lập phiếu thu và phân bổ đúng các dòng công nợ đã chọn.**</Step>
+</Steps>
+
+## Quy tắc phân bổ và trường hợp biên
+
+| Khi bạn thực hiện | Kết quả |
+| --- | --- |
+| Trả ít hơn số còn nợ của một dòng | Phần thanh toán được phân bổ; dòng vẫn còn nợ |
+| Trả đúng số còn nợ | Dòng được thanh toán hết |
+| Nhập **Thanh toán** lớn hơn số còn nợ | Giao diện chỉ phân bổ đến số còn nợ; phần vượt chuyển thành **Tiền thừa** |
+| Không chọn dòng, nhập **Tiền thừa** lớn hơn 0 | Tạo phiếu và ghi sổ tiền thừa; không tạo phân bổ hoặc thay đổi công nợ |
+| Đổi căn hộ sau khi chọn dòng | Xóa lựa chọn và tiền thừa đang nhập; điền lại người nộp và địa chỉ theo căn hộ |
+| Dòng hiển thị không có chi tiết phí để phân bổ | Ô chọn dòng bị vô hiệu hóa |
+
+<Info>
+  **Xem trước** chỉ mở bản xem trước trên giao diện. Phiếu được lưu khi bạn bấm **Thu tiền** hoặc **Thu và in** và yêu cầu thành công.
+</Info>
+
+## Khi hệ thống không tạo phiếu
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Thiếu trường dữ liệu phân bổ trong yêu cầu | Trả lỗi; khác với danh sách rỗng khi thu toàn bộ vào tiền thừa |
+| Chưa cấu hình hình thức thu tiền hoặc số tiền chưa hợp lệ | **Thu tiền** và **Thu và in** bị vô hiệu hóa |
+| Tổng tiền không khớp | Không ghi dữ liệu |
+| Số phân bổ gửi đến server vượt số còn nợ | Không tạo phiếu |
+| Số nợ tại thời điểm cập nhật không còn đủ cho khoản phân bổ | Không tạo phiếu; tải lại dữ liệu trước khi thử lại |
+
+Xem [Use case và workflow](/product-specs/workflow-specifications) để tra sơ đồ và Acceptance Criteria; xem [Hủy phiếu thu](/finance/cancel-receipt) cho thao tác đảo phiếu đã ghi.
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:create_receipt`, người dùng có thể tạo phiếu thu `posted` và phân bổ tiền vào các dòng công nợ hợp lệ.
+
+  ### Acceptance criteria
+
+  - **Given** căn hộ, kỳ, hình thức thanh toán và phân bổ hợp lệ, **when** gửi intent `create-receipt`, **then** hệ thống tạo phiếu, allocation và cập nhật công nợ trong một transaction.
+  - **Given** tổng tiền không bằng phân bổ cộng tiền thừa, **when** gửi yêu cầu, **then** hệ thống không tạo phiếu.
+  - **Given** công nợ tại thời điểm cập nhật không còn đủ cho số phân bổ, **when** ghi phiếu, **then** transaction bị từ chối.
+
+  ### Dữ liệu và kiểm thử
+
+  `ServiceReceiptForm` → `POST /admin/workflow` với intent `create-receipt` → `createReceiptWithAllocation()` → Prisma transaction.
+
+  Transaction ghi `Receipts`, `Cashbook` hoặc `Bankbook` và `AuditLogs`. Khi có phân bổ, transaction tạo `ReceiptAllocations` và cập nhật `Bills`, `BillLines`. Khi có tiền thừa, transaction ghi thêm `ExcessPaymentLedger`. Mọi thay đổi trong transaction được hoàn tác nếu có lỗi.
+
+  Kiểm tra cập nhật dòng phí dùng điều kiện `debt >= allocated`, không so sánh `version` cũ. Vì vậy, không phải mọi thay đổi công nợ đồng thời đều bị từ chối.
+
+  Kiểm thử partial, full allocation, tiền thừa, hình thức sai tòa nhà và concurrent debt change nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

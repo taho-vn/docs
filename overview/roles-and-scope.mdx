@@ -1,0 +1,47 @@
+---
+title: "Vai trò và phạm vi"
+description: "Vai trò, quyền và phạm vi tòa nhà được xác minh từ authorization code."
+keywords: ["roles", "scope", "tower", "authorization"]
+---
+
+Quyền của một tài khoản trả lời hai câu hỏi riêng:
+
+1. Tài khoản được làm việc với tòa nhà nào?
+2. Trong tòa nhà đó, tài khoản được xem và thực hiện thao tác gì?
+
+Quản trị nền tảng dùng màn hình **Quản lý công ty** để [tạo công ty cùng tòa nhà đầu tiên](/operations/organization-onboarding). Quản trị công ty dùng **Tổng Quan dự án** để [thêm tòa nhà](/operations/add-tower) trong công ty của mình. Đây là hai phạm vi tài khoản khác nhau.
+
+## Phạm vi tòa nhà
+
+Sau khi đăng nhập, Taho chọn một tòa nhà đang hoạt động. Danh sách, báo cáo và thao tác quản trị sử dụng tòa nhà này làm phạm vi dữ liệu.
+
+Nếu tài khoản được gán nhiều tòa nhà, người dùng có thể đổi tòa nhà đang làm việc. Hệ thống từ chối chuyển sang tòa nhà không thuộc danh sách được cấp hoặc không còn hoạt động.
+
+Quyền màn hình và thao tác không được gán riêng cho từng tòa nhà. Source hiện hợp nhất các nhóm quyền của tài khoản thành một tập quyền và áp dụng tập quyền đó tại mọi tòa nhà được gán.
+
+## Quyền màn hình và quyền thao tác
+
+| Loại quyền | Ảnh hưởng với người dùng |
+| --- | --- |
+| Quyền route | Màn hình có xuất hiện và truy cập được hay không |
+| Quyền tạo/sửa/xóa | Các nút CRUD tương ứng có được phép hay không |
+| Quyền workflow | Có được duyệt bảng kê, lập phiếu, khóa kỳ hoặc gửi nhắc phí hay không |
+
+`super-admin` vượt qua các route, CRUD và workflow action checks. Tài khoản này vẫn làm việc trong một active tower lấy từ danh sách tower được gán cho employee liên kết.
+
+<Warning>
+  Nhìn thấy một màn hình không có nghĩa tài khoản được phép thay đổi mọi dữ liệu trên màn hình đó. Server kiểm tra lại quyền cho từng thao tác.
+</Warning>
+
+## Khi không thấy dữ liệu hoặc nút thao tác
+
+1. Kiểm tra tòa nhà đang chọn.
+2. Kiểm tra tài khoản còn active.
+3. Kiểm tra nhóm quyền có route cần mở.
+4. Kiểm tra quyền tạo, sửa, xóa hoặc workflow action riêng.
+
+<Accordion title="Dành cho kỹ thuật">
+  Phiên chứa `role`, `allowedTowerIds` và `activeTowerId`. `canAccessRoute()` kiểm tra route; `canPerformCrudAction()` kiểm tra action theo module; `canPerformAction()` kiểm tra specialized workflow action. Grouped authorization được resolve từ database ở mỗi authenticated request. `UserPermissionGroups` không có `tower_id`, nên current source không biểu diễn permission group riêng theo từng tower.
+</Accordion>
+
+Xem specification đầy đủ, flowchart và các mismatch đã xác nhận tại [Permissions matrix](/product-specs/permissions-matrix).

@@ -1,0 +1,37 @@
+---
+title: "Error/status catalog"
+description: "Error codes, HTTP boundaries và domain statuses được route/service code sử dụng."
+keywords: ["errors", "status codes", "domain status"]
+---
+
+## Common HTTP errors
+
+| Code | HTTP status quan sát được | Source boundary |
+| --- | ---: | --- |
+| `unauthorized` | 401 | Protected handlers khi không có session |
+| `forbidden` | 403 | Route/action/CRUD permission thất bại |
+| `forbidden-origin` | 403 | Same-origin guard thất bại |
+| `request-too-large` | 413 | Debt reminder request trên 64 KiB |
+| `webhook-too-large` | 413 | Resend webhook trên 256 KiB |
+| `invalid-signature` | 400 | Resend verification thất bại |
+| `webhook-not-configured` | 503 | Thiếu webhook secret |
+| `invalid-module` | Redirect/error state | Mutation module không khớp route |
+| `workflow-required` | Redirect/error state | Generic mutation bị chặn |
+| `invalid-intent` | 400 hoặc redirect/error state | Intent không được handler hỗ trợ |
+
+Handler response format không đồng nhất hoàn toàn: JSON API helpers, redirects và raw file responses đều tồn tại.
+
+## Domain statuses
+
+- Bill: `draft`, `waiting_confirmation`, `approved`, `partially_paid`, `paid`; code cũng lọc `cancelled`, `deleted`.
+- Bill line: `open`, `partially_paid`, `paid`.
+- Receipt: `posted`, `cancelled`.
+- Allocation: `posted`, `excess_applied`, `reversed`.
+- Adjustment: `draft`, `approved`, `cancelled`.
+- Feedback: `pending`, `processing`, `waiting_resident`, `completed`.
+- Service request: `pending`, `processing`, `completed`, `cancelled`.
+- Repair: `pending`, `received`, `documents_received`, `waiting_developer`, `needs_supplement`, `developer_rejected`, `deposit_required`, `deposited`, `in_progress`, `paused`, `completed`.
+- Cycle lock: `open`, `locked`; financial guard còn nhận `đã khóa`.
+- Reminder campaign/job statuses: xem [State machines](/product-specs/state-machines).
+
+Đây là catalog các status được workflow code quan sát; không suy ra transition chỉ từ tên status.

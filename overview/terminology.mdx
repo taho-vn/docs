@@ -1,0 +1,21 @@
+---
+title: "Thuật ngữ"
+description: "Các thuật ngữ được đối chiếu với identifiers, models và UI hiện tại."
+keywords: ["terminology", "glossary", "Taho"]
+---
+
+| Thuật ngữ | Nghĩa trong Taho | Tên trong code |
+| --- | --- | --- |
+| Tòa nhà | Phạm vi dữ liệu mà người dùng đang làm việc | `activeTowerId`, `Towers` |
+| Căn hộ | Căn hộ thuộc một tòa nhà | `Apartments` |
+| Cư dân | Hồ sơ người cư trú; một cư dân có thể liên kết nhiều căn hộ | `Residents`, `ResidentApartmentMemberships` |
+| Bảng kê | Khoản phí của một căn hộ trong một kỳ, gồm nhiều dòng phí | `Bills`, `BillLines` |
+| Phiếu thu/chi | Chứng từ ghi nhận khoản thu hoặc chi | `Receipts`, `voucher_type` |
+| Phân bổ | Phần tiền của phiếu thu được dùng để thanh toán một dòng công nợ | `ReceiptAllocations` |
+| Tiền thừa | Số tiền đã nhận nhưng chưa phân bổ hết vào công nợ | `ExcessPaymentLedger` |
+| Kỳ | Tháng hạch toán hoặc tính phí, có định dạng `YYYY-MM` | `cycle`, `CycleLocks` |
+| Nhóm quyền | Tập hợp quyền được gán cho người dùng | `PermissionGroups`, `PermissionGroupPermissions` |
+
+Thuật ngữ không có mapping trực tiếp trong code không được định nghĩa tại đây. Not confirmed by current source code.
+
+Xem [Domain model](/product-specs/domain-model) và [Data dictionary](/reference/data-dictionary) để tra quan hệ và model names.

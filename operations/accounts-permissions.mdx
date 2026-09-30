@@ -1,0 +1,55 @@
+---
+title: "Tài khoản và phân quyền"
+description: "Cách tạo tài khoản, gán tòa nhà, quản lý nhóm quyền và offboard người dùng."
+keywords: ["accounts", "permissions", "RBAC"]
+---
+
+Bạn dùng khu vực **Tài khoản - phân quyền** để tạo nhân viên đăng nhập, giới hạn tòa nhà họ được truy cập và gán nhóm quyền.
+
+## Tạo tài khoản nhân viên
+
+<Steps>
+  <Step title="Mở Quản lý người dùng">
+    Chọn **Thêm nhân viên**.
+  </Step>
+  <Step title="Nhập hồ sơ và thông tin đăng nhập">
+    Mã nhân viên và email đăng nhập phải không trùng. Mật khẩu cần ít nhất 8 ký tự, có chữ và số.
+  </Step>
+  <Step title="Chọn tòa nhà và nhóm quyền">
+    Tài khoản đang hoạt động phải được gán ít nhất một tòa nhà.
+  </Step>
+  <Step title="Lưu">
+    Hệ thống tạo hồ sơ nhân viên, tài khoản đăng nhập và các assignment trong cùng transaction.
+  </Step>
+</Steps>
+
+## Gán quyền cho người dùng
+
+Mở chi tiết người dùng rồi chọn **Phân quyền người dùng** để thay toàn bộ danh sách tòa nhà và nhóm quyền hiện tại. Thay đổi có hiệu lực ở lần request tiếp theo vì authorization được đọc lại từ database.
+
+## Quản lý nhóm quyền
+
+Trong **Danh sách nhóm quyền**, bạn có thể tạo nhóm, đổi tên, mô tả và chọn tập quyền của nhóm. Tên nhóm trùng hoặc permission ID không hợp lệ bị từ chối.
+
+## Khóa, đặt lại mật khẩu và offboard
+
+- Đổi trạng thái active/inactive yêu cầu quyền riêng.
+- Bạn không thể tự khóa tài khoản đang đăng nhập.
+- Reset mật khẩu yêu cầu quyền `reset_user_password`.
+- Offboard xóa assignment, đánh dấu hồ sơ nhân viên `deleted` và khóa tài khoản đăng nhập.
+- Bạn không thể tự offboard chính mình.
+
+## Xử lý lỗi
+
+| Khi gặp | Kiểm tra |
+| --- | --- |
+| Không thấy menu hoặc thao tác | Kiểm tra route permission, action permission và tòa nhà được gán. |
+| Không lưu được tài khoản active | Tài khoản active phải được gán ít nhất một tòa nhà. |
+| Không thể tự khóa hoặc offboard | Source chặn thao tác trên chính tài khoản đang đăng nhập. |
+| Super-admin tạo được user nhưng không lưu lại cùng tower assignment | Hai code path đang kiểm tra scope khác nhau. Xem contradiction trong [Permissions matrix](/product-specs/permissions-matrix). |
+
+<Accordion title="Dành cho kỹ thuật">
+  Login resolve grouped authorization từ `AuthUsers`, `Users`, `UserBuildings`, `UserPermissionGroups` và `PermissionGroupPermissions`. RBAC administration đi qua `POST /admin/rbac` và ghi audit log.
+</Accordion>
+
+Xem cách kiểm tra quyền tại [Permissions matrix](/product-specs/permissions-matrix).

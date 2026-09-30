@@ -1,0 +1,29 @@
+---
+title: "Import/export"
+description: "Preview, commit, template và export branches hiện có."
+keywords: ["import", "export", "XLSX", "CSV"]
+---
+
+## Import
+
+`POST /admin/import` yêu cầu same-origin, authentication và access tới route lấy từ `returnTo`.
+
+```text
+file -> readImportFileForRoute()
+-> createDetailedBillImportPreview() hoặc createImportPreview()
+-> persisted preview
+-> commitFinancialImportPreview() hoặc commitImportPreview()
+-> target workflow tables
+```
+
+Commit kiểm tra preview thuộc route và tower hiện tại. Financial modules dùng workflow-specific commit; branch còn lại dùng repository validation.
+
+## Export
+
+`GET /admin/export` yêu cầu route hợp lệ, `moduleKey`, access permission và `allowExport !== false`. User export yêu cầu thêm `export_users`.
+
+XLSX branches được tìm thấy cho bill template/list, resident template/list, apartment summary, debt, excess, cashbook và bankbook. Generic modules và một số specialized rows trả CSV.
+
+`mode=qr` trả SVG chứa title và route detail. Không tìm thấy QR encoding workflow. Phân loại: `Placeholder`.
+
+Xem các admin entry points tại [Route catalog](/reference/route-catalog).
