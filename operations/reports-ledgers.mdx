@@ -1,0 +1,54 @@
+---
+title: "Báo cáo và sổ quỹ"
+description: "Cách xem và xuất báo cáo công nợ, tiền thừa, sổ tiền mặt và sổ ngân hàng."
+keywords: ["reports", "cashbook", "bankbook", "ledger"]
+---
+
+Bạn dùng nhóm **Báo cáo - sổ quỹ** để xem số liệu tổng hợp. Các màn hình này không dùng generic create, update hoặc delete.
+
+## Chọn báo cáo phù hợp
+
+| Bạn cần xem | Màn hình |
+| --- | --- |
+| Công nợ theo căn hộ hoặc dịch vụ | **Tổng hợp công nợ chi tiết** |
+| Tổng số nợ theo căn hộ | **Tổng hợp công nợ** |
+| Số dư chưa phân bổ | **Quản lý tiền thừa** và **Chi tiết tiền thừa** |
+| Thu/chi bằng tiền mặt | **Sổ quỹ tiền mặt** |
+| Thu/chi qua ngân hàng | **Sổ quỹ ngân hàng** |
+| Thông báo, sự kiện, bình luận và mức độ hài lòng | **Báo cáo tương tác** |
+
+## Lọc và xuất báo cáo
+
+<Steps>
+  <Step title="Mở báo cáo">
+    Chọn kỳ, căn hộ, dịch vụ, trạng thái hoặc khoảng ngày nếu màn hình có bộ lọc tương ứng.
+  </Step>
+  <Step title="Kiểm tra phần tổng hợp">
+    Số liệu trên thẻ tổng hợp được tính lại từ các dòng đã lọc hoặc dữ liệu workflow hiện tại.
+  </Step>
+  <Step title="Chọn Xuất Excel">
+    Debt, excess, bảng kê, cashbook và bankbook có nhánh xuất XLSX riêng.
+  </Step>
+</Steps>
+
+## Gửi email nhắc công nợ
+
+Trong **Tổng hợp công nợ**, tài khoản có quyền gửi nhắc phí có thể xem trước danh sách người nhận rồi xác nhận tạo chiến dịch. Thao tác xác nhận chỉ đưa email vào hàng đợi.
+
+<Info>
+  Thao tác xác nhận không gửi email ngay. Email chỉ rời hàng đợi khi tiến trình gửi mail đang chạy. Hệ thống hiện tại không xác nhận tiến trình này được chạy tự động theo lịch.
+</Info>
+
+## Xử lý lỗi
+
+| Khi gặp | Kiểm tra |
+| --- | --- |
+| Campaign đã queue nhưng email chưa gửi | Dispatcher phải được chạy riêng. Automatic scheduler: `Not Found`. |
+| Người nhận bị bỏ qua | Contact, consent, suppression và current debt được kiểm tra lại trước khi gửi. |
+| Preview cũ không queue được | Dữ liệu đã đổi và `snapshotHash` không còn khớp; thực hiện preview lại. |
+
+<Accordion title="Dành cho kỹ thuật">
+  Debt reports dùng dữ liệu từ financial workflow. Cashbook/bankbook dùng ledger report builders. Reminder preview loại cư dân thiếu consent, email hợp lệ hoặc đang nằm trong suppression list. One-shot dispatcher chạy bằng `yarn reminders:dispatch`.
+</Accordion>
+
+Xem format xuất file tại [Import/export](/engineering/import-export) và email delivery tại [Integrations](/engineering/integrations).

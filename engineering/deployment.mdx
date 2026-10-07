@@ -1,0 +1,17 @@
+---
+title: "Deployment"
+description: "Docker image và GitHub Actions deployment path hiện tại."
+keywords: ["Docker", "GitHub Actions", "CapRover", "deployment"]
+---
+
+`Dockerfile` dùng Node 24 Alpine. Builder chạy application build với build-time PostgreSQL URL. Runner cài production dependencies, copy `.next`, `public`, Prisma artifacts và chạy `yarn start` dưới user `nextjs` không phải root.
+
+GitHub workflow `.github/workflows/docker-app.yml` chạy khi `main` thay đổi ở configured paths. Workflow build `linux/arm64`, push image lên GHCR và gọi CapRover deploy action. Telegram action chạy sau deploy step.
+
+## Source mismatch
+
+Workflow path filter theo dõi `next.config.mjs`, trong khi repository hiện có `next.config.ts`. Đây là contradiction trong current source; docs không tự kết luận ảnh hưởng runtime.
+
+Không công bố deployment host, application name, token hoặc secret values.
+
+Xem runtime variables theo tên tại [Environment variables](/reference/environment-variables).

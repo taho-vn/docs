@@ -1,0 +1,136 @@
+---
+title: "Route catalog"
+description: "Catalog 55 admin route definitions và 28 HTTP route handlers trong source hiện tại."
+keywords: ["routes", "admin", "HTTP handlers", "catalog"]
+---
+
+## Admin routes
+
+`getAdminRoutePolicy()` phân loại 55 admin route definitions như sau.
+
+## Coverage matrix
+
+| Module surface | Server path chính | Persistence | Supporting tests | Canonical docs |
+| --- | --- | --- | --- | --- |
+| Căn hộ/cư dân | Mutate, memberships, reconciliation | Apartments, Residents, memberships | Resident membership và apartment summary tests | `/operations/apartments-residents` |
+| Tương tác | Mutate, resident workflow, downloads | Feedback, requests, comments, tasks, attachments | Resident request, feedback form, repair tests | `/operations/resident-interactions` |
+| Dịch vụ/phương tiện | Mutate, apartment vehicles, meter image | Services, assignments, vehicles, readings | Vehicle và meter image tests | `/operations/services-vehicles` |
+| Tài chính | Financial workflow và imports | Bills, lines, receipts, allocations, adjustments, books | Financial, adjustment và receipt tests | `/operations/debt-payments` |
+| Reports | Server page report builders và export | Financial/interaction aggregate sources | Debt, excess, finance report và export tests | `/operations/reports-ledgers` |
+| RBAC | Auth, RBAC route và employee guards | Auth/user/group/assignment/audit models | Auth, CRUD permission và RBAC PostgreSQL tests | `/operations/accounts-permissions` |
+| Import/export | Import và export handlers | Import records và target tables | Import/export tests | `/engineering/import-export` |
+| Reminder | Queue, dispatcher và webhook | Campaign, notification, event, suppression | Reminder và webhook tests | `/engineering/integrations` |
+
+Supporting test file tồn tại không chứng minh toàn bộ row; đây là trace target, không phải coverage percentage.
+
+### Readonly
+
+```text
+/admin
+/admin/apartments/import
+/admin/customers/import
+/admin/v2/debit/general-detail
+/admin/v2/debit/total
+/admin/v2/debit/total-tien-thua
+/admin/report-chart/report_total_interactive
+/admin/notification
+```
+
+### Workflow
+
+```text
+/admin/v2/bill/import-excel
+/admin/v2/bill/list-pay
+/admin/v2/bill/x-wait-for-confirm
+/admin/v2/bill/adjustments
+/admin/history-transaction-accounting
+/admin/history-transaction-accounting/import-save
+/admin/resident-miniapp
+/admin/v2/receipt/deleted
+/admin/v2/receipt
+/admin/v2/debit/detail-tien-thua
+/admin/feedback/fback
+/admin/v2/user-request/registerVehicle
+/admin/v2/receipt-total
+/admin/v2/receipt-bankbook/bankbook
+/admin/system/permission/index
+```
+
+### Specialized
+
+| Route | Module | Required action |
+| --- | --- | --- |
+| `/admin/feedbackform` | `feedback_forms` | `manage_feedback_forms` |
+| `/admin/cycle_name` | `cycle_locks` | `lock_period` |
+
+### Generic
+
+```text
+/admin/apartments
+/admin/ai-assistant
+/admin/apartments/create
+/admin/customers
+/admin/posts/article
+/admin/posts/event
+/admin/posts/create
+/admin/polloptions
+/admin/posts/comments
+/admin/v2/service-apartment
+/admin/v2/service-building
+/admin/v2/vehicles
+/admin/partners
+/admin/electric-meter
+/admin/v2/receipt/list-category
+/admin/v2/receipt/list-payment-code
+/admin/feedback/repair-apartment
+/admin/manage-user
+/admin/manage-user/create
+/admin/manage-user/edit
+/admin/manage-user/permissions
+/admin/system/permission-groups/index
+/admin/building
+/admin/building-handbook
+/admin/building-place
+/admin/accounting-account
+/admin/categories/article
+/admin/customer_rated_service/audit-app
+/admin/customer_rated_service/total
+/admin/configs/b-admin
+```
+
+`/admin/v2/vehicles` nhận generic policy nhưng `/admin/mutate` chặn module `vehicles`; write path thực tế là `/admin/apartment-vehicles`.
+
+## HTTP handlers
+
+| Route | Methods |
+| --- | --- |
+| `/admin/apartment-vehicles` | `GET`, `POST` |
+| `/admin/ai/chat` | `GET`, `POST` |
+| `/admin/ai/knowledge` | `POST`, `DELETE` |
+| `/admin/debt-reminders` | `POST` |
+| `/admin/electric-meter/image/[recordId]` | `GET` |
+| `/admin/export` | `GET` |
+| `/admin/feedbackform/download` | `GET` |
+| `/admin/import` | `POST` |
+| `/admin/mutate` | `POST` |
+| `/admin/rbac` | `POST` |
+| `/admin/repair-attachment/[recordId]` | `GET` |
+| `/admin/resident-attachment/[attachmentId]` | `GET` |
+| `/admin/resident-import-reconciliation` | `GET`, `POST` |
+| `/admin/resident-miniapp/action` | `POST` |
+| `/admin/resident-memberships` | `GET`, `POST` |
+| `/admin/resident-workflow` | `POST` |
+| `/admin/towers` | `POST` |
+| `/admin/workflow` | `POST` |
+| `/api/mcp` | `GET`, `POST`, `DELETE` |
+| `/api/resident/auth/zalo` | `POST`, `OPTIONS` |
+| `/auth/change-password` | `POST` |
+| `/auth/login` | `POST` |
+| `/auth/logout` | `POST` |
+| `/auth/switch-tower` | `POST` |
+| `/landing/contact` | `POST` |
+| `/api/resident/portal` | `GET`, `POST`, `OPTIONS` |
+| `/platform/organizations/onboard` | `POST` |
+| `/webhooks/resend` | `POST` |
+
+Route existence không tự chứng minh complete workflow. Xem [Workflow specifications](/product-specs/workflow-specifications).

@@ -1,0 +1,35 @@
+---
+title: "Thêm tòa nhà cho công ty"
+description: "Cách quản trị công ty tạo tòa nhà mới và quản lý tên, trạng thái tòa nhà."
+keywords: ["thêm tòa nhà", "quản trị công ty", "tòa nhà"]
+---
+
+Bạn có thể thêm tòa nhà vào công ty hiện tại từ màn hình **Tổng Quan dự án**. Tài khoản phải là quản trị công ty có quyền mở màn hình này. Đây là luồng thêm tòa sau khi [công ty và tòa đầu tiên](/operations/organization-onboarding) đã được tạo.
+
+## Thêm tòa nhà
+
+<Steps>
+  <Step title="Mở Tổng Quan dự án">
+    Trong menu **Thông tin dữ liệu**, chọn **Tổng Quan dự án**.
+  </Step>
+  <Step title="Nhập tòa nhà mới">
+    Tại phần **Thêm tòa nhà**, nhập **Mã tòa nhà** và **Tên tòa nhà**. Mã dùng chữ thường, số hoặc dấu gạch ngang; tối đa 64 ký tự. Tên không được để trống và tối đa 200 ký tự.
+  </Step>
+  <Step title="Chọn Thêm tòa nhà">
+    Khi lưu thành công, tòa mới xuất hiện trong **Danh sách tòa nhà** với trạng thái **Hoạt động**. Hệ thống cũng gán tòa mới cho chính quản trị viên thực hiện thao tác.
+  </Step>
+</Steps>
+
+Để nhân viên khác truy cập tòa mới, hãy cập nhật danh sách tòa nhà được gán cho họ tại [Tài khoản và phân quyền](/operations/accounts-permissions).
+
+<Warning>
+  Mã tòa nhà trùng bị từ chối. Bạn không thể thêm tòa nhà cho công ty khác.
+</Warning>
+
+## Đổi tên hoặc trạng thái
+
+Trong **Danh sách tòa nhà**, sửa **Tên tòa nhà** hoặc chọn **Hoạt động**/**Tạm ngưng**, rồi chọn **Lưu**. Mã tòa nhà chỉ hiển thị để đọc. Hệ thống không cho tạm ngưng tòa đang hoạt động cuối cùng của công ty.
+
+<Accordion title="Dành cho kỹ thuật">
+  `app/admin/_features/organizations/TowerManagement.tsx` gửi form tới `POST /admin/towers`. Handler yêu cầu tài khoản thuộc phạm vi `organization` với vai trò `super-admin`; `src/modules/organizations/tower-admin.ts` kiểm tra lại tài khoản và công ty. Luồng tạo ghi `Towers`, liên kết `UserBuildings` cho người tạo và `OrganizationAuditLogs` trong một Prisma transaction. Luồng cập nhật chỉ thay `tower_name` và `status` của tòa thuộc công ty rồi ghi audit cùng transaction.
+</Accordion>

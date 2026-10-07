@@ -1,0 +1,72 @@
+---
+title: "Duyệt bảng kê"
+description: "Cách chuyển một bảng kê nháp sang trạng thái approved."
+keywords: ["approve bill", "approved", "bảng kê"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền duyệt bảng kê và đã chọn tòa nhà |
+| Kết quả | Bảng kê chuyển sang `approved`; hệ thống lưu người duyệt, thời điểm và audit log |
+
+## Trước khi thực hiện
+
+- Bảng kê thuộc tòa nhà đang chọn.
+- Trạng thái là `draft` hoặc `waiting_confirmation`.
+- Kỳ của bảng kê đang mở.
+
+Bạn duyệt bảng kê tại **Công nợ - thanh toán** → **Duyệt số liệu**. Sau khi duyệt, bảng kê chuyển sang trạng thái sẵn sàng để thu tiền.
+
+<Frame caption="Màn hình Duyệt số liệu hiển thị các bảng kê chờ duyệt">
+  <img src="/images/finance/approve-bill-list.png" alt="Màn hình duyệt số liệu bảng kê" />
+</Frame>
+
+## Các bước
+
+<Steps>
+  <Step title="Mở màn hình duyệt số liệu">Chọn tòa nhà cần làm việc. Mở **Công nợ - thanh toán** → **Duyệt số liệu**.</Step>
+  <Step title="Kiểm tra thông tin bảng kê">Kiểm tra mã bảng kê, tên khách hàng, căn hộ, kỳ phí và số tiền phát sinh trên danh sách.</Step>
+  <Step title="Chọn bảng kê và duyệt">
+    Đánh dấu vào ô vuông ở đầu dòng của các bảng kê cần duyệt (hoặc tích ô ở tiêu đề cột để chọn tất cả trên trang). Sau đó bấm nút **Duyệt đã chọn** màu vàng. Hệ thống sẽ hiện hộp thoại xác nhận số lượng bảng kê cần duyệt.
+  </Step>
+  <Step title="Kiểm tra kết quả">
+    Khi duyệt thành công, bảng kê chuyển sang trạng thái đã duyệt và tự động biến mất khỏi danh sách chờ duyệt. Mở **Danh sách bảng kê** để xem toàn bộ bảng kê đã sẵn sàng thu nợ.
+
+    <Frame caption="Danh sách bảng kê sau khi đã duyệt thành công">
+      <img src="/images/finance/bill-list-approved.png" alt="Danh sách bảng kê đã duyệt" />
+    </Frame>
+  </Step>
+</Steps>
+
+## Tình huống thực tế
+
+> **Ví dụ:** Sau khi tính công nợ kỳ `07/2026`:
+> - Ban quản lý mở **Duyệt số liệu**, thấy 2 bảng kê: `BK-202607-A0101` (687.000 đ) và `BK-202607-A0102` (180.000 đ).
+> - Người phụ trách tích chọn cả 2 bảng kê rồi bấm **Duyệt đã chọn**.
+> - Cả 2 bảng kê chuyển sang trạng thái **Chờ thanh toán**. Kế toán có thể bắt đầu [Lập phiếu thu](/finance/create-receipt) cho các căn hộ này.
+
+## Khi hệ thống không duyệt
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Không tìm thấy bảng kê trong tòa nhà đang chọn | Trả lỗi |
+| Trạng thái không phải `draft` hoặc `waiting_confirmation` | Không duyệt |
+| Kỳ đã khóa | Không duyệt |
+| Bảng kê đổi trong lúc duyệt | Yêu cầu reload trước khi thử lại |
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:approve_bill`, người dùng có thể chuyển bảng kê hợp lệ sang `approved`.
+
+  ### Acceptance criteria
+
+  - **Given** bảng kê thuộc `activeTowerId`, ở trạng thái hợp lệ và kỳ đang mở, **when** gửi intent `approve-bill`, **then** bảng kê chuyển sang `approved`.
+  - **Given** bảng kê đã đổi `version`, **when** duyệt, **then** request bị từ chối.
+  - **Given** kỳ đã khóa, **when** duyệt, **then** trạng thái bảng kê không đổi.
+
+  ### Dữ liệu và kiểm thử
+
+  Transaction cập nhật `Bills.status`, `approved_by`, `approved_at`, `version` và tạo `AuditLogs`. Kiểm thử concurrent approval nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

@@ -1,0 +1,65 @@
+---
+title: "Tình trạng tính năng"
+description: "Các giới hạn và mâu thuẫn giữa testcase MVP, tài liệu cũ và source hiện tại."
+keywords: ["release", "milestone", "feature status"]
+---
+
+## Đối chiếu testcase với source hiện tại
+
+<Warning>
+  Trạng thái ghi trong testcase và thông tin của bản sửa cũ không xác nhận phiên bản đang vận hành. Lần đối chiếu này đọc source; không chạy lại UAT, kết nối Zalo thật hoặc migration trên database vận hành.
+</Warning>
+
+| Testcase | Phân loại hiện tại | Hành vi và điểm dừng được xác nhận |
+| --- | --- | --- |
+| `BUG-01` — Ẩn bảng kê nháp trên Mini App | `Implemented` cho bộ lọc trạng thái | Truy vấn lọc `approved`, `partially_paid`, `paid` trước giới hạn 24 bảng kê. Tuy nhiên tổng nợ được cộng từ danh sách đã giới hạn, không phải toàn bộ bảng kê của căn hộ. Nội dung cũ về tổng nợ toàn bộ không đúng với source hiện tại. |
+| `BUG-02` — Không mở lại bản ghi hoàn thành tùy ý | `Partial` | Repository chặn phản ánh từ `completed` sang trạng thái khác và kiểm tra trạng thái lúc ghi. Yêu cầu dịch vụ không có guard tương tự; chưa có ma trận chuyển trạng thái đầy đủ, kiểm tra task còn mở hoặc transaction chung cho trạng thái và lịch sử. |
+| `BUG-03` — Ràng buộc bảng kê–căn hộ | `Implemented` trong schema và migration | Khóa ngoại dùng cặp `(tower_id, apartment)` trỏ tới `(tower_id, code)`. Schema không có `Bills.apartment_id`. Migration dừng khi có mã trùng hoặc tham chiếu không hợp lệ; trạng thái triển khai database đích chưa được xác nhận. |
+| `MINI-17`, `GAP-12` — Quyền đọc yêu cầu cá nhân | `Partial` so với mục tiêu creator account | Đường tạo lưu `miniapp_zalo_user_id`; đường đọc lọc theo định danh Zalo đó cùng tòa nhà/căn hộ. Nhận định cũ “chỉ lọc phone” không còn đúng. Quan hệ khóa ngoại tới tài khoản cư dân: Not confirmed by current source code. |
+
+<Info>
+  `Implemented` mô tả phần có trong source; không có nghĩa testcase đã được kiểm thử lại và đạt. Dùng [Chỉ mục testcase](/reference/manual-testcases) để tra mục tiêu và phạm vi nghiệm thu.
+</Info>
+
+### Giới hạn Mini App ảnh hưởng nghiệm thu
+
+| Testcase | Phân loại | Điểm dừng hiện tại |
+| --- | --- | --- |
+| `MINI-01`–`MINI-03`, `GAP-01` — Danh tính và quyền số điện thoại | `Partial` so với expected có phone proof | Có màn **Tiếp tục với Zalo**, lấy access token và xác minh danh tính qua server. Luồng hiện không xin quyền số điện thoại; kết quả xác minh đặt `verifiedPhone` rỗng. Nhánh từ chối/đồng ý cấp số điện thoại: Not confirmed by current source code. |
+| `MINI-18` — Gửi lặp không tạo trùng | `Not Found` | API tạo phản ánh gọi `create` trực tiếp; không có khóa chống lặp trong luồng này. |
+| `GAP-02` — Refresh rotation và logout | `Not Found` | Có tạo và kiểm tra token phiên; không tìm thấy luồng refresh rotation hoặc thu hồi phiên bằng logout Mini App. |
+| `GAP-03` — Bật từng luồng theo tòa nhà | `Not Found` | Luồng liên kết liệt kê tòa nhà `active`; không có bước đọc cờ bật riêng onboarding/portal. |
+| `GAP-04` — Tìm căn hộ an toàn | `Not Found` | Form hiện nhập mã căn hộ rồi gửi; chưa có luồng tìm gợi ý căn hộ. |
+| `GAP-05`, `GAP-06` — Chi tiết và đã đọc thông báo | `Partial` | API trả metadata tối đa 20 thông báo; Trang chủ hiển thị thông báo đầu tiên. Chưa có luồng chi tiết/đánh dấu đã đọc; `unreadNotices` là số thông báo trả về, không phải trạng thái đọc theo tài khoản. |
+| `GAP-07`, `GAP-08` — Chi tiết tài chính và lịch sử phiếu | `Partial` | API trả `paid`, `debt` và trạng thái, nhưng UI dòng phí chỉ hiển thị số tiền. Phiếu `cancelled`/`deleted` bị loại; chưa có lịch sử phiếu hủy có nhãn riêng hoặc chi tiết tiền thừa/điều chỉnh. |
+| `GAP-09`–`GAP-11` — Dịch vụ, đính kèm và hội thoại | `Partial` | Backend có nhánh tạo yêu cầu dịch vụ, nhưng form Mini App chỉ gửi ý kiến với tiêu đề/nội dung. Chưa có luồng Mini App tải file, xem chi tiết và trao đổi hai chiều. |
+| `GAP-13` — Gửi liên kết căn thứ hai | `Partial` | Có bộ chọn các căn đã duyệt và API gửi liên kết; chưa có thao tác gửi liên kết mới trong giao diện portal đã duyệt. |
+
+Các mục nghiệm thu thiết bị thật, hồ sơ phát hành, backup, UAT và pilot (`REL-02`–`REL-05`) không được xác nhận bằng việc đọc source. Not confirmed by current source code.
+
+## Giới hạn phần AI
+
+Các mục dưới đây mô tả source hiện tại, không xác nhận kết nối OpenAI hoặc PostgreSQL trong môi trường vận hành. Xem [chỉ mục AI](/ai/index) để đọc các chức năng hiện có.
+
+| Khả năng cần đối chiếu | Phân loại | Điểm dừng của luồng hiện tại |
+| --- | --- | --- |
+| Gợi ý **Tóm tắt tình hình công nợ hiện tại** | `Partial` | Giao diện gửi câu hỏi tới chat, nhưng công cụ chỉ tìm tối đa 20 bản ghi mỗi lần. Hàm `summarize()` trả `{}` và không được đăng ký thành công cụ tổng hợp. Không có luồng tính tổng toàn bộ tòa nhà qua công cụ AI này. |
+| Trả lời từng phần trong lúc xử lý | `Not Found` | Chat xử lý xong rồi trả JSON; giao diện đọc toàn bộ phản hồi bằng `response.json()`. |
+| OCR cho ảnh hoặc PDF chỉ chứa ảnh | `Not Found` | Luồng PDF dừng ở trích văn bản bằng `extractText`; tệp không lấy được văn bản bị từ chối. Không có bước OCR trong luồng tải tài liệu này. |
+| Tìm kiếm trên toàn bộ kho tài liệu lớn | `Partial` | Repository chỉ lấy tối đa 1.000 đoạn mới nhất thuộc tài liệu `ready` trước khi xếp hạng. Đoạn ngoài tập ứng viên không được xét. |
+| Xác minh nội dung câu trả lời bằng nguồn | `Partial` | Kiểm tra dừng ở việc mã trích nguồn thuộc tập nguồn được cung cấp; không có bước xác minh từng phát biểu. |
+
+## Các giới hạn tính năng khác
+
+| Khu vực | Thao tác trên giao diện | Tình trạng hiện tại |
+| --- | --- | --- |
+| Căn hộ sử dụng dịch vụ | **Import dịch vụ cho căn hộ** | Nút hiện thông báo; chưa có luồng nhập dữ liệu tương ứng. |
+| Căn hộ sử dụng dịch vụ | **Sắp xếp dịch vụ ưu tiên hạch toán** | Nút hiện thông báo; chưa có luồng lưu thứ tự tương ứng. |
+| Lập phiếu thu | **Nghiệp vụ thực hiện** và **Kiểu Phiếu** | Hai lựa chọn hiển thị trên form nhưng không được gửi tới handler lập phiếu thu dịch vụ. |
+| Quản lý người dùng | **Quản lý bộ phận** | Nút đang bị vô hiệu hóa. |
+| Cấu hình hệ thống | **Chọn mẫu bảng kê**, **Chọn mẫu phiếu thu** và **Lưu** trên thanh công cụ **Quản lý khóa kỳ** | Các nút hiện thông báo; thao tác **Thêm mới** và **Sửa** theo dòng là đường lưu hiện có. |
+| Nhắc công nợ | Tự chạy lệnh gửi theo lịch | Có lệnh gửi riêng; lịch tự động gọi lệnh này chưa được xác nhận trong source hiện tại. |
+
+<Info>
+  Khi đối chiếu release, kiểm tra lại cả thao tác trên giao diện và đường ghi dữ liệu trước khi đổi trạng thái một mục trong bảng.
+</Info>

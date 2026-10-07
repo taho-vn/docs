@@ -1,0 +1,149 @@
+---
+title: "Vòng đời trạng thái"
+description: "Sơ đồ và ý nghĩa nghiệp vụ của các trạng thái được hệ thống sử dụng."
+keywords: ["state machine", "status", "transitions"]
+---
+
+Trang này giải thích trạng thái của từng loại bản ghi. Giá trị trong dấu `code` là tên trạng thái được lưu; nhãn tiếng Việt cho biết ý nghĩa với người dùng.
+
+## Bảng kê
+
+```mermaid
+stateDiagram-v2
+    state "Nháp" as draft
+    state "Chờ xác nhận" as waiting_confirmation
+    state "Đã duyệt" as approved
+    state "Đã thu một phần" as partially_paid
+    state "Đã thanh toán" as paid
+    [*] --> draft: Tính phí hoặc lập bảng kê
+    draft --> approved: Duyệt
+    waiting_confirmation --> approved: Duyệt
+    approved --> partially_paid: Thu một phần
+    approved --> paid: Thu đủ
+    partially_paid --> paid: Thu phần còn lại
+    approved --> draft: Sửa dòng phí khi được phép
+```
+
+| Trạng thái | Ý nghĩa khi tra cứu bảng kê |
+| --- | --- |
+| `draft` | Bảng kê nháp, chờ duyệt. |
+| `waiting_confirmation` | Bảng kê đang chờ xác nhận; luồng duyệt cũng chấp nhận trạng thái này. |
+| `approved` | Đã duyệt và có thể thu tiền vào các dòng phí hợp lệ. |
+| `partially_paid` | Đã thu một phần, vẫn còn công nợ. |
+| `paid` | Đã thanh toán hết số còn nợ. |
+
+Trạng thái sau khi thu hoặc đảo khoản thu được tính lại từ số **đã thu** và **còn nợ**. Sơ đồ thể hiện các đường chính, không phải mọi kết quả khi hoàn tác một khoản thu.
+
+<Warning>
+  **Sửa trực tiếp dòng phí có điều kiện.** Khi dòng đã có phân bổ tiền thu hoặc điều chỉnh được duyệt, hệ thống chặn sửa trực tiếp.
+</Warning>
+
+## Điều chỉnh công nợ
+
+```mermaid
+stateDiagram-v2
+    state "Nháp" as draft
+    state "Đã duyệt" as approved
+    state "Đã hủy" as cancelled
+    [*] --> draft: Lập điều chỉnh
+    draft --> approved: Duyệt
+    approved --> cancelled: Hủy khi không có khoản phụ thuộc
+```
+
+| Trạng thái | Ý nghĩa với công nợ |
+| --- | --- |
+| `draft` | Mới lập, chưa tác động đến công nợ. |
+| `approved` | Đã áp dụng thay đổi vào dòng phí và bảng kê; khoản giảm vượt số còn nợ có thể thành tiền thừa. |
+| `cancelled` | Đã hoàn tác điều chỉnh được phép hủy. |
+
+<Info>
+  **Lập điều chỉnh nháp không đổi công nợ.** Công nợ thay đổi khi điều chỉnh được duyệt.
+</Info>
+
+<Warning>
+  **Không thể hủy mọi điều chỉnh đã duyệt.** Hệ thống chặn hủy nếu điều chỉnh sau, khoản thu hoặc tiền thừa đã sử dụng phụ thuộc vào điều chỉnh này. Khi dữ liệu đã thay đổi trong lúc thao tác, bạn cần tải lại trước khi tiếp tục.
+</Warning>
+
+## Phiếu thu và phân bổ
+
+```mermaid
+stateDiagram-v2
+    state "Đã ghi nhận" as posted
+    state "Đã hủy" as cancelled
+    [*] --> posted: Lập và ghi nhận phiếu
+    posted --> cancelled: Hủy khi đủ điều kiện
+```
+
+| Trạng thái phiếu | Ý nghĩa nghiệp vụ |
+| --- | --- |
+| `posted` | Phiếu đã được ghi nhận vào hệ thống. |
+| `cancelled` | Phiếu đã hủy; các tác động liên quan được đảo theo quy tắc hủy. |
+
+<Warning>
+  **Chỉ phiếu thu `posted` được hủy.** Kỳ hạch toán phải đang mở và không được có khoản phụ thuộc khiến việc hoàn tác không an toàn.
+</Warning>
+
+Phân bổ là bản ghi riêng với phiếu thu:
+
+| Trạng thái phân bổ | Ý nghĩa nghiệp vụ |
+| --- | --- |
+| `posted` | Tiền phiếu thu đã được phân bổ vào dòng công nợ. |
+| `excess_applied` | Tiền thừa đã được dùng để cấn trừ công nợ. |
+| `reversed` | Khoản phân bổ đã bị đảo khi hủy phiếu liên quan. |
+
+## Phản ánh và yêu cầu dịch vụ
+
+Luồng cập nhật hiện kiểm tra trạng thái đích có trong danh sách của loại bản ghi. Riêng phản ánh đã `completed`, repository chặn đổi sang trạng thái khác và so sánh trạng thái hiện tại khi ghi để tránh ghi đè một thay đổi đồng thời.
+
+```mermaid
+flowchart TD
+  A[Chọn trạng thái xử lý] --> B{Trạng thái đích hợp lệ cho loại bản ghi?}
+  B -->|Không| C[Từ chối]
+  B -->|Có| D{Phản ánh đã hoàn thành?}
+  D -->|Có| E{Đích vẫn là completed?}
+  E -->|Không| C
+  E -->|Có| F[So sánh trạng thái hiện tại rồi ghi]
+  D -->|Không, là phản ánh| F
+  D -->|Không, là yêu cầu dịch vụ| G[Ghi trạng thái đích qua repository]
+  F --> H{Trạng thái hiện tại còn khớp?}
+  H -->|Không| C
+  H -->|Có| I[Lưu cập nhật]
+  G --> I
+```
+
+| Loại | Trạng thái | Nhãn trên giao diện |
+| --- | --- | --- |
+| Phản ánh | `pending` | Chờ BQL xử lý |
+| Phản ánh | `processing` | BQL đang xử lý |
+| Phản ánh | `waiting_resident` | Chờ cư dân phản hồi |
+| Phản ánh | `completed` | Đã hoàn thành |
+| Yêu cầu dịch vụ | `pending` | Đang chờ |
+| Yêu cầu dịch vụ | `processing` | Đang xử lý |
+| Yêu cầu dịch vụ | `completed` | Hoàn thành |
+| Yêu cầu dịch vụ | `cancelled` | Đã hủy |
+
+<Info>
+  Trả lời một bản ghi đang `pending` sẽ chuyển sang `processing`. Tạo công việc cho phản ánh đang `pending` cũng chuyển sang `processing`. Thao tác tạo và hoàn thành công việc chỉ áp dụng cho phản ánh.
+</Info>
+
+<Warning>
+  **Phản ánh đã hoàn thành không được mở lại qua cập nhật trạng thái.** Source hiện tại chưa có ma trận buộc phản ánh đi qua từng bước trước khi hoàn thành, cũng chưa kiểm tra công việc còn mở khi chọn `completed`. Yêu cầu dịch vụ vẫn nhận bất kỳ trạng thái đích nào trong danh sách, kể cả đổi từ `completed` hoặc `cancelled`. Xem [Tình trạng tính năng](/reference/release-status).
+</Warning>
+
+## Nhắc công nợ
+
+Chiến dịch bắt đầu ở `queued`. Trạng thái tiếp theo được tính từ các công việc gửi email, không phải nút chuyển trạng thái thủ công.
+
+| Trạng thái chiến dịch | Ý nghĩa |
+| --- | --- |
+| `queued` | Đã đưa vào hàng đợi. |
+| `processing` | Đang xử lý công việc gửi. |
+| `dispatched` | Đã gửi yêu cầu đi; kết quả giao cuối cùng còn phụ thuộc phản hồi. |
+| `delivered` | Được ghi nhận đã giao. |
+| `completed_with_failures` | Đợt gửi kết thúc nhưng có công việc thất bại. |
+
+Các trạng thái từng công việc gửi được giải thích tại [Danh mục lỗi và trạng thái](/reference/error-status-catalog).
+
+<Accordion title="Dành cho kỹ thuật">
+  Luồng bảng kê, điều chỉnh và phiếu thu đi qua `app/admin/workflow/route.ts` tới các service trong `src/modules/billing`. Phản ánh và yêu cầu dịch vụ đi qua `app/admin/resident-workflow/route.ts` rồi `admin-repository.ts`; danh sách trạng thái ở `src/modules/requests/resident-requests.ts`. Các file `request-workflow.shared.ts` và `request-workflow.ts` từng được trang này dẫn không tồn tại trong source hiện tại. Trạng thái chiến dịch nhắc nợ được tính trong `src/modules/billing/debt-reminders.ts`.
+</Accordion>

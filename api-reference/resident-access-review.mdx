@@ -1,0 +1,8 @@
+---
+title: "Duyệt quyền căn hộ"
+description: "BQL duyệt, từ chối hoặc thu hồi một liên kết căn hộ trong tòa nhà đang chọn."
+keywords: ["API", "OpenAPI", "POST", "/admin/resident-miniapp/action"]
+openapi: "/openapi.json POST /admin/resident-miniapp/action"
+---
+
+Trường `reason` phải có nội dung khi `decision` là `reject`. Duyệt chỉ cập nhật liên kết và audit, không tạo hồ sơ cư dân hoặc membership. Xem [hướng dẫn thao tác](/operations/resident-miniapp).

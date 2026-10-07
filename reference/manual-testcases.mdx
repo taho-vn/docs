@@ -1,0 +1,304 @@
+---
+title: "Chỉ mục testcase"
+description: "Tra mã testcase, phạm vi nghiệm thu MVP và tài liệu liên quan cho PM, BA và QA."
+keywords: ["testcase", "MVP", "QA", "nghiệm thu", "manual"]
+---
+
+Bạn dùng trang này để tìm tài liệu theo mã testcase trong bộ kiểm thử MVP ngày 30/09/2026. Chỉ mục có 166 case của sheet `Manual_Checklist`; cột **Phạm vi workbook** cho biết case có thuộc 98 mục của sheet `Chot_MVP` hay không.
+
+<Info>
+  Tên case dưới đây là mục tiêu kiểm thử trong workbook, không phải cam kết rằng toàn bộ hành vi đã được triển khai. Trạng thái `pass`, `fail`, `not implement` của workbook không được đổi thành phân loại triển khai của docs. Các khác biệt với source hiện tại nằm tại [Tình trạng tính năng](/reference/release-status).
+</Info>
+
+## Cách dùng khi nghiệm thu
+
+<Steps>
+  <Step title="Chọn case và đọc nghiệp vụ">
+    Tìm ID trong bảng, mở tài liệu liên quan và đối chiếu quyền, trạng thái đầu vào, thao tác và kết quả hiện tại.
+  </Step>
+  <Step title="Chuẩn bị dữ liệu kiểm thử">
+    Dùng tài khoản và dữ liệu giả trong môi trường kiểm thử riêng. Giữ thông tin đăng nhập, dữ liệu cá nhân, ảnh bằng chứng và kết quả chạy trong hồ sơ kiểm thử riêng.
+  </Step>
+  <Step title="Thực hiện và ghi nhận">
+    Thực hiện các bước trong workbook, ghi kết quả thực tế và đối chiếu với expected đã kiểm tra lại theo source. Case mở màn hình chỉ xác nhận màn hình; không thay thế kiểm thử lưu, reload, phân quyền hoặc đối soát dữ liệu.
+  </Step>
+  <Step title="Xử lý khác biệt">
+    Nếu expected khác source, ghi rõ mâu thuẫn và phiên bản được kiểm thử. Chưa có bằng chứng thì giữ phần đó chưa xác nhận; không tự coi một mục chưa triển khai là đạt.
+  </Step>
+</Steps>
+
+## Các khác biệt cần đọc trước
+
+| Case | Nội dung cần đối chiếu lại |
+| --- | --- |
+| `IMP-01`–`IMP-04`, `RES-04`, `RTE-019` | Import căn hộ/cư dân có bước xem trước; module tài chính ghi ngay khi file hợp lệ. Cư dân đi vào hàng chờ đối soát. |
+| `LOCK-02` | Kỳ hạch toán của phiếu khác với kỳ phí của bảng kê; khóa kỳ phí không tự chặn mọi thu nợ. |
+| `BUG-01` | Source đã lọc bảng kê nháp; tổng nợ portal vẫn giới hạn theo 24 bảng kê trả về. |
+| `BUG-02` | Phản ánh hoàn thành được chặn mở lại; yêu cầu dịch vụ chưa có cùng guard. |
+| `BUG-03` | Schema và migration có khóa ngoại bảng kê–căn hộ bằng mã và tòa nhà, không phải `Bills.apartment_id`. |
+| `MINI-01`–`MINI-03` | Luồng hiện xác minh danh tính Zalo nhưng không xin hoặc xác minh số điện thoại. Không dùng expected phone proof cũ để mô tả khả năng hiện tại. |
+| `MINI-17`, `GAP-12` | Quyền đọc yêu cầu dùng định danh Zalo người tạo cùng căn hộ/tòa nhà; không còn chỉ lọc phone. |
+| `MINI-18`, `GAP-02`–`GAP-13` | Đối chiếu từng điểm dừng ở trang tình trạng tính năng; không suy từ một API hoặc một control rằng cả luồng MVP đã đầy đủ. |
+
+Các kiểm tra xác thực Zalo trên iOS/Android và các mục hồ sơ phát hành, UAT, pilot cần kết quả thực tế riêng. Đọc source hoặc chạy preview local không xác nhận các kết quả này.
+
+## Danh mục theo mã case
+
+**Phạm vi workbook** chỉ thể hiện cách chọn case trong file: **MVP** là có trong `Chot_MVP`; **Mở rộng** là chỉ có trong `Manual_Checklist`. Đây không phải ưu tiên hoặc quyết định phát hành mới.
+
+### Đăng nhập và quyền truy cập
+
+Đọc [tài liệu liên quan](/operations/accounts-permissions).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `AUTH-01` | Admin đăng nhập hợp lệ | MVP |
+| `AUTH-02` | Từ chối mật khẩu sai | MVP |
+| `AUTH-03` | Đăng xuất kết thúc phiên | MVP |
+| `AUTH-04` | Bắt buộc đổi mật khẩu lần đầu | MVP |
+| `RBAC-01` | Operator chỉ thấy nhóm menu được cấp | MVP |
+| `RBAC-02` | Không vượt quyền bằng URL trực tiếp | MVP |
+| `RBAC-03` | Quyền xem route độc lập create/update/delete | MVP |
+| `RBAC-04` | Lưu nhóm quyền hai lần không reload | Mở rộng |
+| `RBAC-05` | Chặn email đăng nhập trùng và sửa tại chỗ | Mở rộng |
+| `ORG-01` | Đổi tòa chỉ hiển thị dữ liệu của tòa đã chọn | MVP |
+| `ORG-02` | Thêm tòa trong đúng Organization | Mở rộng |
+
+### Căn hộ và cư dân
+
+Đọc [tài liệu liên quan](/operations/apartments-residents).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `APT-01` | Tạo căn hộ với mã test riêng | MVP |
+| `APT-02` | Chặn mã căn hộ trùng trong cùng tòa | MVP |
+| `APT-03` | Sửa tên và giữ bộ lọc danh sách | Mở rộng |
+| `APT-04` | Hủy và xác nhận xóa căn hộ | Mở rộng |
+| `RES-01` | Tạo cư dân và quan hệ cư trú qua workspace | MVP |
+| `RES-02` | Quan hệ chủ hộ không bị mất khi sửa cư dân | Mở rộng |
+| `RES-03` | Một cư dân thuộc hai căn hộ không nhân đôi hồ sơ | MVP |
+| `RES-04` | Import cư dân vào hàng đối soát, chưa tự tạo hồ sơ | MVP |
+
+### Nhập và xuất dữ liệu
+
+Đọc [tài liệu liên quan](/engineering/import-export).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `IMP-01` | Preview căn hộ CSV rồi commit | MVP |
+| `IMP-02` | CSV lỗi chỉ số có lỗi từng dòng, không commit | MVP |
+| `IMP-03` | Preview cùng mã trùng trong file | MVP |
+| `IMP-04` | Import preview chỉ commit một lần | MVP |
+| `EXP-01` | Xuất căn hộ theo danh sách đang xem | MVP |
+| `EXP-02` | Xuất cư dân theo căn hộ | MVP |
+
+### Dịch vụ, chỉ số và phương tiện
+
+Đọc [tài liệu liên quan](/operations/services-vehicles).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `SVC-01` | Tạo dịch vụ phí cố định | MVP |
+| `SVC-02` | Tạo dịch vụ điện/nước theo chỉ số | MVP |
+| `SVC-03` | Gán dịch vụ cho đúng căn hộ | MVP |
+| `SVC-04` | Nhập tiền theo định dạng Việt Nam | Mở rộng |
+| `MTR-01` | Chỉ số cuối trừ chỉ số đầu | MVP |
+| `MTR-02` | Sửa chỉ số cuối và khóa trường định danh | MVP |
+| `MTR-03` | Upload, thay và xóa ảnh công tơ | Mở rộng |
+| `MTR-04` | Chặn chỉ số cuối nhỏ hơn đầu | MVP |
+| `VEH-01` | Tạo xe pending và kích hoạt đúng gói dịch vụ | MVP |
+| `VEH-02` | Xe hiển thị trong chi tiết căn và export căn hộ | MVP |
+
+### Bảng kê, phiếu và khóa kỳ
+
+Đọc [tài liệu liên quan](/operations/debt-payments).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `BILL-01` | Tính phí cố định thành bảng kê nháp | MVP |
+| `BILL-02` | Tính tiền nước 12 × 15.000 | MVP |
+| `BILL-03` | Duyệt bảng kê trước khi thu | MVP |
+| `BILL-04` | Draft không được dùng để thu tiền | MVP |
+| `BILL-05` | Sửa bill chưa phân bổ đưa về draft | MVP |
+| `BILL-06` | Xóa nháp và giữ snapshot audit | MVP |
+| `BILL-07` | Lập bảng kê phát sinh | Mở rộng |
+| `PAY-01` | Thu thiếu giữ dư nợ | MVP |
+| `PAY-02` | Thu đủ tất toán bảng kê | MVP |
+| `PAY-03` | Thu dư tạo tiền thừa | MVP |
+| `PAY-04` | Chỉ phân bổ các dòng được chọn | MVP |
+| `PAY-05` | Hủy phiếu khôi phục nợ và tiền thừa | MVP |
+| `PAY-06` | Hủy một trong hai phiếu thu thiếu | MVP |
+| `PAY-07` | Phương thức thu thuộc đúng tòa | MVP |
+| `PAY-08` | Phiếu chi ghi sổ và in chi tiết | MVP |
+| `PAY-09` | Bộ lọc phiếu không dùng status legacy | Mở rộng |
+| `EXC-01` | Tổng hợp và chi tiết khớp nguồn phiếu | MVP |
+| `EXC-02` | Áp dụng tiền thừa vào nợ đã duyệt | MVP |
+| `LOCK-01` | Khóa kỳ chặn tính phí và sửa trực tiếp | MVP |
+| `LOCK-02` | Thu nợ kỳ khóa bằng ngày hạch toán kỳ mở | MVP |
+| `ADJ-01` | Phiếu điều chỉnh nháp chưa tác động nợ | MVP |
+| `ADJ-02` | Duyệt giảm nợ không tạo thu tiền | MVP |
+| `ADJ-03` | Hủy điều chỉnh khôi phục nợ | MVP |
+
+### Báo cáo và sổ quỹ
+
+Đọc [tài liệu liên quan](/operations/reports-ledgers).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `RPT-01` | Báo cáo công nợ khớp vòng thu | MVP |
+| `RPT-02` | Sổ quỹ tiền mặt theo kỳ lọc | MVP |
+| `RPT-03` | Sổ ngân hàng khớp chứng từ chuyển khoản | MVP |
+
+### Tương tác cư dân
+
+Đọc [tài liệu liên quan](/operations/resident-interactions).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `REQ-01` | Admin tạo ý kiến với file đính kèm | MVP |
+| `REQ-02` | Giao việc và hoàn thành công việc | MVP |
+| `REQ-03` | Phản hồi Admin được lưu lịch sử | MVP |
+| `REQ-04` | Admin tạo đăng ký xe có trường điều kiện | MVP |
+
+### Trường hợp lỗi cần đối chiếu lại
+
+Đọc [tài liệu liên quan](/reference/release-status).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `BUG-01` | Mini App phải ẩn bill draft và không cộng nợ nháp | MVP |
+| `BUG-02` | Không mở lại completed sang pending tùy ý | MVP |
+| `BUG-03` | DB phải bảo vệ tham chiếu bill sang căn hộ | MVP |
+
+### Giao diện trên thiết bị di động
+
+Đọc [tài liệu liên quan](/engineering/testing).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `UI-01` | Sidebar mobile mở/đóng | Mở rộng |
+| `UI-02` | Feedback và sổ quỹ đọc được trên mobile | Mở rộng |
+
+### Mini App và quyền căn hộ
+
+Đọc [tài liệu liên quan](/operations/resident-miniapp).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `MINI-01` | Bắt đầu bằng tài khoản Zalo thật trên iOS | MVP |
+| `MINI-02` | Luồng thực tế trên Android | MVP |
+| `MINI-03` | Từ chối cấp quyền số điện thoại | MVP |
+| `MINI-04` | Gửi liên kết không tự cấp quyền dù khớp phone | MVP |
+| `MINI-05` | Mã căn hộ không tồn tại không tạo link | MVP |
+| `MINI-06` | Gửi lại liên kết không tạo hai dòng pending | MVP |
+| `MINI-07` | Duyệt quyền không tạo cư dân/membership ngầm | MVP |
+| `MINI-08` | Từ chối bắt buộc lý do công khai | MVP |
+| `MINI-09` | Thu hồi chặn lần request tiếp theo | MVP |
+| `MINI-10` | Không duyệt link ở tòa khác active scope | MVP |
+| `MINI-11` | Chuyển giữa hai căn approved | MVP |
+| `MINI-12` | Không đọc căn chưa được duyệt qua đổi apartmentId | MVP |
+| `MINI-13` | Bill approved và receipt khớp Admin | MVP |
+| `MINI-14` | Không có thao tác thanh toán | MVP |
+| `MINI-15` | Phiếu hủy không còn trong lịch sử thu hiện hành | MVP |
+| `MINI-16` | Cư dân gửi ý kiến và Admin nhận đúng căn | MVP |
+| `MINI-17` | Không đọc yêu cầu riêng người cùng căn | MVP |
+| `MINI-18` | Gửi lặp phản ánh không tạo trùng | MVP |
+| `MINI-19` | Empty state cho bill, receipt và request | Mở rộng |
+| `MINI-20` | Lỗi mạng và thử lại | MVP |
+| `MINI-21` | Hồ sơ và danh sách căn approved | MVP |
+| `MINI-22` | Token phiên hỏng/hết hạn không được đọc portal | MVP |
+| `MINI-23` | Không dùng header preview để giả cư dân production | MVP |
+
+### Khoảng trống so với mục tiêu MVP
+
+Đọc [tài liệu liên quan](/reference/release-status).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `GAP-01` | Màn giải thích trước khi xin phone | MVP |
+| `GAP-02` | Refresh rotation và logout Mini App | MVP |
+| `GAP-03` | Bật/tắt onboarding và portal riêng theo tòa | MVP |
+| `GAP-04` | Tìm mã căn hộ an toàn trên Mini App | MVP |
+| `GAP-05` | Xem danh sách và chi tiết thông báo | MVP |
+| `GAP-06` | Đánh dấu thông báo đã đọc | MVP |
+| `GAP-07` | Chi tiết tài chính có paid/adjustment/excess | MVP |
+| `GAP-08` | Lịch sử phiếu thu có trạng thái rõ | MVP |
+| `GAP-09` | Form đăng ký dịch vụ từ Mini App | MVP |
+| `GAP-10` | Đính kèm ảnh/PDF trên Mini App | MVP |
+| `GAP-11` | Chi tiết yêu cầu và hội thoại cư dân–BQL | MVP |
+| `GAP-12` | Creator account bảo vệ request privacy | MVP |
+| `GAP-13` | Liên kết căn thứ hai bằng UI cư dân | MVP |
+
+### Nghiệm thu và phát hành
+
+Đọc [tài liệu liên quan](/reference/release-status).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `REL-01` | Ghi môi trường và bộ dữ liệu UAT | MVP |
+| `REL-02` | Kiểm tra hồ sơ Zalo và QR phiên bản phát hành | MVP |
+| `REL-03` | Backup và preflight dữ liệu trước rollout | MVP |
+| `REL-04` | UAT nội bộ và duyệt lỗi tồn đọng | MVP |
+| `REL-05` | Pilot và quyết định go/no-go | MVP |
+
+### Mở màn hình quản trị
+
+Đọc [tài liệu liên quan](/reference/route-catalog).
+
+| ID | Mục tiêu kiểm thử | Phạm vi workbook |
+| --- | --- | --- |
+| `RTE-001` | Mở màn hình: Trang chủ | Mở rộng |
+| `RTE-002` | Mở màn hình: Trợ lý AI | Mở rộng |
+| `RTE-003` | Mở màn hình: Danh sách căn hộ | Mở rộng |
+| `RTE-004` | Mở màn hình: Thêm mới căn hộ | Mở rộng |
+| `RTE-005` | Mở màn hình: Import căn hộ | Mở rộng |
+| `RTE-006` | Mở màn hình: Danh sách cư dân | Mở rộng |
+| `RTE-007` | Mở màn hình: Duyệt truy cập cư dân | Mở rộng |
+| `RTE-008` | Mở màn hình: Import danh sách cư dân | Mở rộng |
+| `RTE-009` | Mở màn hình: Thông báo cư dân | Mở rộng |
+| `RTE-010` | Mở màn hình: Sự kiện | Mở rộng |
+| `RTE-011` | Mở màn hình: Thăm dò ý kiến | Mở rộng |
+| `RTE-012` | Mở màn hình: Danh sách bình chọn | Mở rộng |
+| `RTE-013` | Mở màn hình: Danh sách bình luận | Mở rộng |
+| `RTE-014` | Mở màn hình: Căn hộ sử dụng dịch vụ | Mở rộng |
+| `RTE-015` | Mở màn hình: Dịch vụ tòa nhà | Mở rộng |
+| `RTE-016` | Mở màn hình: Quản lý phương tiện | Mở rộng |
+| `RTE-017` | Mở màn hình: Danh sách đối tác | Mở rộng |
+| `RTE-018` | Mở màn hình: Chỉ số điện nước | Mở rộng |
+| `RTE-019` | Mở màn hình: Import bảng kê | Mở rộng |
+| `RTE-020` | Mở màn hình: Danh sách bảng kê | Mở rộng |
+| `RTE-021` | Mở màn hình: Duyệt số liệu | Mở rộng |
+| `RTE-022` | Mở màn hình: Điều chỉnh công nợ | Mở rộng |
+| `RTE-023` | Mở màn hình: Tổng hợp công nợ chi tiết | Mở rộng |
+| `RTE-024` | Mở màn hình: Tổng hợp công nợ | Mở rộng |
+| `RTE-025` | Mở màn hình: Quản lý tiền thừa | Mở rộng |
+| `RTE-026` | Mở màn hình: Import phiếu thu | Mở rộng |
+| `RTE-027` | Mở màn hình: cập nhật file import hạch toán | Mở rộng |
+| `RTE-028` | Mở màn hình: Danh mục phiếu thu chi | Mở rộng |
+| `RTE-029` | Mở màn hình: Quản lý phiếu thu/chi đã huỷ | Mở rộng |
+| `RTE-030` | Mở màn hình: Quản lý phiếu thu/chi | Mở rộng |
+| `RTE-031` | Mở màn hình: Quản lý mã thanh toán | Mở rộng |
+| `RTE-032` | Mở màn hình: Chi tiết tiền thừa | Mở rộng |
+| `RTE-033` | Mở màn hình: Ý kiến cư dân | Mở rộng |
+| `RTE-034` | Mở màn hình: Yêu cầu dịch vụ | Mở rộng |
+| `RTE-035` | Mở màn hình: Thiết lập mẫu Form | Mở rộng |
+| `RTE-036` | Mở màn hình: Đăng ký sửa chữa | Mở rộng |
+| `RTE-037` | Mở màn hình: Sổ quỹ tiền mặt | Mở rộng |
+| `RTE-038` | Mở màn hình: Sổ quỹ ngân hàng | Mở rộng |
+| `RTE-039` | Mở màn hình: Báo cáo tương tác | Mở rộng |
+| `RTE-040` | Mở màn hình: Quản lý người dùng | Mở rộng |
+| `RTE-041` | Mở màn hình: Thêm nhân viên | Mở rộng |
+| `RTE-042` | Mở màn hình: Cập nhật người dùng | Mở rộng |
+| `RTE-043` | Mở màn hình: Phân quyền người dùng | Mở rộng |
+| `RTE-044` | Mở màn hình: Danh sách nhóm quyền | Mở rộng |
+| `RTE-045` | Mở màn hình: Danh sách quyền | Mở rộng |
+| `RTE-046` | Mở màn hình: Lịch sử gửi mail | Mở rộng |
+| `RTE-047` | Mở màn hình: Tổng Quan dự án | Mở rộng |
+| `RTE-048` | Mở màn hình: Cẩm nang tòa nhà | Mở rộng |
+| `RTE-049` | Mở màn hình: Danh sách các phân khu | Mở rộng |
+| `RTE-050` | Mở màn hình: Tài khoản hạch toán | Mở rộng |
+| `RTE-051` | Mở màn hình: Hình thức phiếu thu | Mở rộng |
+| `RTE-052` | Mở màn hình: Đánh giá ứng dụng | Mở rộng |
+| `RTE-053` | Mở màn hình: Đánh giá dịch vụ | Mở rộng |
+| `RTE-054` | Mở màn hình: Danh sách cấu hình toà nhà | Mở rộng |
+| `RTE-055` | Mở màn hình: Quản lý khóa kỳ | Mở rộng |

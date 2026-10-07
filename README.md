@@ -1,55 +1,39 @@
-# Mintlify Starter Kit
+# Taho documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Public Mintlify documentation generated from the current Taho application source code.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## Information architecture
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+- Bắt đầu
+- Nghiệp vụ (hướng dẫn vận hành và quy trình)
+- Kỹ thuật
+- Tra cứu
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+`docs.json` divides the published pages into Bắt đầu, Nghiệp vụ, Kỹ thuật and Tra cứu tabs. Each documentation tab has its own sidebar; page headings provide the on-page table of contents. The homepage uses a separate landing layout.
 
-## AI-assisted writing
+## Rules
 
-Set up your AI coding tool to work with Mintlify:
+- Current executable source code is the only source of truth for current behavior.
+- Do not infer missing workflows or business rules.
+- Do not publish credentials, personal data, financial records, production endpoints, or secret values.
+- See `AGENTS.md` for the source verification and writing contract.
+
+## Local preview
 
 ```bash
-npx skills add https://mintlify.com/docs
+npx mint dev
 ```
 
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+## Validation
 
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
-npm i -g mint
+```bash
+npm run check
+npm run check:source
+npx mint validate
+npx mint broken-links --check-anchors --check-redirects
+npx mint a11y
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+`check:source` expects the application repository at `../../xbuilding`, relative to this documentation directory. Use `node scripts/check-docs.mjs --app-source <path>` when it is elsewhere.
 
-```
-mint dev
-```
-
-View your local preview at `http://localhost:3000`.
-
-## Publishing changes
-
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+See `CONTRIBUTING.md` for the evidence workflow, audience-specific page structures, Mintlify component guidance and PR slices.

@@ -1,0 +1,61 @@
+---
+title: "Tương tác cư dân"
+description: "Cách tiếp nhận ý kiến, xử lý yêu cầu dịch vụ, phản hồi và tài liệu đính kèm."
+keywords: ["feedback", "service requests", "attachments"]
+---
+
+Bạn dùng khu vực này để tiếp nhận ý kiến, xử lý yêu cầu dịch vụ và theo dõi trao đổi với cư dân.
+
+## Chọn đúng màn hình
+
+| Nhu cầu | Màn hình |
+| --- | --- |
+| Ghi nhận và xử lý phản ánh | **Ý kiến cư dân** |
+| Đăng ký phương tiện, hủy phương tiện hoặc cấp lại thẻ | **Yêu cầu dịch vụ** |
+| Quản lý mẫu thu thập ý kiến | **Thiết lập mẫu Form** |
+| Theo dõi hồ sơ sửa chữa căn hộ | **Đăng ký sửa chữa** |
+
+## Tiếp nhận ý kiến hoặc yêu cầu
+
+<Steps>
+  <Step title="Mở màn hình phù hợp">
+    Chọn **Ý kiến cư dân** hoặc **Yêu cầu dịch vụ** trong menu quản trị.
+  </Step>
+  <Step title="Chọn Thêm mới">
+    Nhập căn hộ, nội dung và các thông tin được biểu mẫu yêu cầu.
+  </Step>
+  <Step title="Đính kèm tài liệu nếu cần">
+    Hệ thống nhận JPEG, PNG, WebP hoặc PDF. Bạn được gửi tối đa 4 file, mỗi file tối đa 2 MB.
+  </Step>
+  <Step title="Gửi yêu cầu">
+    Bản ghi mới bắt đầu ở trạng thái chờ xử lý.
+  </Step>
+</Steps>
+
+## Xử lý và phản hồi
+
+Khi mở một ý kiến hoặc yêu cầu, người có quyền có thể:
+
+- đổi trạng thái xử lý;
+- gửi phản hồi và đính kèm file;
+- xem lịch sử trao đổi;
+- tạo và hoàn thành công việc đối với ý kiến cư dân;
+- xóa ý kiến khi có quyền xóa.
+
+Khi phản hồi một bản ghi đang chờ, hệ thống có thể chuyển bản ghi sang trạng thái đang xử lý. Các trạng thái được hiển thị tại [State machines](/product-specs/state-machines).
+
+<Info>
+  Với ý kiến đã **Đã hoàn thành**, giao diện chỉ giữ trạng thái hoàn thành và server chặn mở lại qua cập nhật trạng thái. Yêu cầu dịch vụ hiện có tập lựa chọn trạng thái khác; giới hạn chuyển trạng thái được mô tả tại [Tình trạng tính năng](/reference/release-status).
+</Info>
+
+## Xử lý lỗi
+
+| Khi gặp | Điều kiện source đang kiểm tra |
+| --- | --- |
+| Không tải được file đính kèm | File phải là JPEG, PNG, WebP hoặc PDF; tối đa 4 file, 2 MB mỗi file và 10 MB cho toàn request. |
+| Không thao tác được bản ghi | Request phải thuộc active tower và tài khoản phải có quyền tương ứng. |
+| Không tạo được task cho service request | Task create/complete chỉ được tìm thấy trong feedback workflow. |
+
+<Accordion title="Dành cho kỹ thuật">
+  Mọi thao tác trên đi qua `POST /admin/resident-workflow`. Comments, attachments và tasks được lưu riêng, sau đó liên kết với feedback hoặc service request. Tổng request body bị giới hạn 10 MB; file được kiểm tra MIME, extension và signature.
+</Accordion>

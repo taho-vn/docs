@@ -1,0 +1,48 @@
+---
+title: "Hủy phiếu thu"
+description: "Cách đảo phân bổ, tiền thừa và bút toán của một phiếu thu posted."
+keywords: ["cancel receipt", "reversed allocation", "reversal"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền hủy phiếu thu và đã chọn tòa nhà |
+| Kết quả | Phiếu chuyển sang `cancelled`; phân bổ và bút toán liên quan được đảo |
+
+## Trước khi thực hiện
+
+- Phiếu thu thuộc tòa nhà đang chọn và có trạng thái `posted`.
+- Kỳ hạch toán của phiếu đang mở.
+- Không có adjustment đã duyệt phụ thuộc vào dòng được phân bổ.
+- Các kỳ của debt nhận tiền thừa vẫn mở khi workflow cần đảo chúng.
+
+## Các bước
+
+<Steps>
+  <Step title="Chọn phiếu thu">Chọn phiếu thu `posted` cần hủy.</Step>
+  <Step title="Hủy phiếu">Hệ thống kiểm tra kỳ và dữ liệu phụ thuộc trước khi chuyển phiếu sang `cancelled`.</Step>
+  <Step title="Xem kết quả">Phân bổ chuyển sang `reversed`; số đã thu, số còn nợ, tiền thừa và sổ liên quan được cập nhật.</Step>
+</Steps>
+
+## Khi hệ thống không hủy
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Phiếu đã hủy hoặc không phải `posted` | Không hủy lại |
+| Kỳ đang khóa | Không hủy |
+| Có adjustment phụ thuộc | Yêu cầu hủy adjustment trước |
+| Công nợ đổi trong lúc hủy | Transaction bị từ chối |
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:cancel_receipt`, người dùng có thể hủy một phiếu thu `posted` khi không có dữ liệu phụ thuộc chặn.
+
+  ### Acceptance criteria
+
+  - **Given** phiếu `posted`, kỳ đang mở và không có dữ liệu phụ thuộc chặn, **when** gửi intent `cancel-receipt`, **then** phiếu chuyển sang `cancelled` và phân bổ được đảo.
+  - **Given** có điều chỉnh phụ thuộc hoặc kỳ đã khóa, **when** hủy, **then** hệ thống không hủy phiếu.
+
+  Transaction cập nhật `Receipts`, `ReceiptAllocations`, `BillLines`, `Bills`, `ExcessPaymentLedger`, `Cashbook` hoặc `Bankbook`, và `AuditLogs`. Kiểm thử reversal, kỳ khóa, partial payment và excess dependency nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

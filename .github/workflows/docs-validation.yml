@@ -1,0 +1,22 @@
+name: Docs validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run check
+      - run: npx --yes mint validate
+      - run: npx --yes mint broken-links --check-anchors --check-redirects
+      - run: npx --yes mint a11y

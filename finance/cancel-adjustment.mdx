@@ -1,0 +1,45 @@
+---
+title: "Hủy điều chỉnh công nợ"
+description: "Cách hoàn tác một điều chỉnh đã duyệt khi không có dữ liệu phụ thuộc chặn."
+keywords: ["cancel adjustment", "reversal", "dependency"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền hủy điều chỉnh và đã chọn tòa nhà |
+| Kết quả | Khôi phục dòng phí; điều chỉnh chuyển sang `cancelled` |
+
+## Trước khi thực hiện
+
+- Điều chỉnh thuộc tòa nhà đang chọn và có trạng thái `approved`.
+- Kỳ hạch toán đang mở.
+- Dòng nguồn vẫn khớp giá trị sau điều chỉnh.
+- Không có điều chỉnh được duyệt mới hơn phụ thuộc cùng dòng.
+- Không có phân bổ phiếu thu mới hơn phụ thuộc phần tăng công nợ.
+- Credit do điều chỉnh tạo ra chưa được sử dụng.
+
+## Các bước
+
+<Steps>
+  <Step title="Chọn điều chỉnh">Chọn điều chỉnh đã duyệt cần hủy.</Step>
+  <Step title="Kiểm tra dữ liệu liên quan">Hệ thống kiểm tra điều chỉnh, phân bổ phiếu thu và credit liên quan.</Step>
+  <Step title="Xem kết quả">Hệ thống khôi phục dòng phí, cập nhật bảng kê và chuyển điều chỉnh sang `cancelled`.</Step>
+</Steps>
+
+## Khi không thể hủy
+
+Hệ thống trả lỗi nếu có dữ liệu phụ thuộc mới hơn hoặc dòng nguồn đã thay đổi. Source không tự động hủy các dữ liệu phụ thuộc đó.
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:cancel_billing_adjustment`, người dùng có thể hoàn tác một điều chỉnh `approved` khi không có dữ liệu phụ thuộc chặn.
+
+  ### Acceptance criteria
+
+  - **Given** điều chỉnh hợp lệ và không có dữ liệu phụ thuộc chặn, **when** gửi intent `cancel-adjustment`, **then** dòng phí được khôi phục và điều chỉnh chuyển sang `cancelled`.
+  - **Given** có phân bổ, điều chỉnh mới hơn hoặc credit đã dùng, **when** hủy, **then** hệ thống trả lỗi và không tự động hủy dữ liệu phụ thuộc.
+
+  Prisma transaction cập nhật adjustment, adjustment lines, bill lines, bill, excess ledger liên quan và audit log. Kiểm thử dependency và reversal nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

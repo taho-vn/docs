@@ -1,0 +1,27 @@
+---
+title: "Integrations"
+description: "External systems và integration boundaries được source sử dụng."
+keywords: ["PostgreSQL", "R2", "Resend", "integrations"]
+---
+
+| Integration | Call path hiện tại | Persistence/side effect |
+| --- | --- | --- |
+| PostgreSQL | Prisma adapter và `pg` | Application data |
+| R2-compatible storage | Meter image service | Object bytes; metadata trong `MeterReadings` |
+| Resend | One-shot reminder dispatcher | Email HTTP request và provider message ID |
+| Resend webhook | `POST /webhooks/resend` | Notification event/status/suppression updates |
+| Google Analytics | `NEXT_PUBLIC_GA_ID` read trong UI configuration | Client analytics khi configured |
+| OpenAI | Chat và embedding trong module AI | Gửi ngữ cảnh tới provider; tài liệu và lịch sử lưu trong PostgreSQL |
+| Zalo/verifier | Mini App lấy access token; backend xác minh qua verifier | Backend tạo token phiên; quyền căn hộ được lưu riêng khi gửi liên kết |
+
+## Reminder boundary
+
+`POST /admin/debt-reminders` chỉ queue campaign/jobs. `yarn reminders:dispatch` mới gọi Resend khi email delivery được enabled. Không tìm thấy scheduler tự động gọi command trong source hoặc deployment workflow. Phân loại: `Not Found` cho automatic scheduling.
+
+## R2 boundary
+
+Meter images chấp nhận JPEG, PNG hoặc WebP. Object key được tạo phía server theo tower và record. Download route yêu cầu authentication, route access và key/record match.
+
+Biến cấu hình được liệt kê tại [Environment variables](/reference/environment-variables).
+
+Đọc [Mini App](/mini-app/index), [Trợ lý AI](/ai/index), [API / Swagger](/api-reference/index) và [Mẫu env](/reference/env-example) để nối cấu hình với luồng thực tế.

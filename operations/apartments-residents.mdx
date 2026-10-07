@@ -1,0 +1,94 @@
+---
+title: "Căn hộ và cư dân"
+description: "Cách quản lý căn hộ, hồ sơ cư dân và các liên kết cư dân–căn hộ."
+keywords: ["apartments", "residents", "memberships"]
+---
+
+Bạn dùng khu vực **Căn hộ - cư dân** để quản lý danh sách căn hộ, hồ sơ cư dân và mối quan hệ giữa cư dân với căn hộ.
+
+<Info>
+  Bạn chỉ thấy và thay đổi dữ liệu thuộc tòa nhà đang chọn. Nút tạo, sửa hoặc xóa chỉ xuất hiện khi tài khoản có quyền tương ứng.
+</Info>
+
+## Các màn hình chính
+
+| Màn hình | Bạn có thể làm gì |
+| --- | --- |
+| **Danh sách căn hộ** | Tìm kiếm, xem, thêm, sửa, xóa và xuất danh sách căn hộ |
+| **Danh sách cư dân** | Tìm kiếm, xem hồ sơ, xuất danh sách và quản lý căn hộ của cư dân |
+| Chi tiết căn hộ | Xem cư dân và phương tiện đang gắn với căn hộ |
+| Chi tiết cư dân | Xem và cập nhật các căn hộ mà cư dân đang liên kết |
+
+<Frame caption="Giao diện danh sách căn hộ theo tòa nhà đang chọn">
+  <img src="/images/operations/apartments-list.png" alt="Danh sách căn hộ" />
+</Frame>
+
+## Thêm căn hộ
+
+<Steps>
+  <Step title="Mở danh sách căn hộ">
+    Trong menu **Căn hộ - cư dân**, chọn **Danh sách căn hộ**.
+  </Step>
+  <Step title="Chọn Thêm mới">
+    Nhập tên, mã căn hộ và trạng thái theo biểu mẫu đang hiển thị.
+  </Step>
+  <Step title="Lưu căn hộ">
+    Hệ thống kiểm tra mã căn hộ trong tòa nhà hiện tại trước khi tạo bản ghi.
+  </Step>
+</Steps>
+
+## Gắn cư dân vào căn hộ
+
+<Steps>
+  <Step title="Mở chi tiết căn hộ">
+    Từ **Danh sách căn hộ**, chọn xem căn hộ cần cập nhật.
+  </Step>
+  <Step title="Chọn cư dân">
+    Bạn có thể tạo cư dân mới cùng liên kết hoặc chọn một cư dân chưa gắn với căn hộ này.
+  </Step>
+  <Step title="Chọn quan hệ và ngày chuyển vào">
+    Lưu thông tin quan hệ cư dân–căn hộ theo biểu mẫu.
+  </Step>
+</Steps>
+
+Bạn cũng có thể mở chi tiết một cư dân để gắn thêm căn hộ, sửa quan hệ hoặc xóa một liên kết hiện có. Xóa liên kết không đồng nghĩa xóa hồ sơ cư dân.
+
+## Tình huống thực tế
+
+> **Ví dụ:** Căn hộ `A0101` có chủ hộ mới chuyển vào:
+> 1. Vào **Danh sách căn hộ**, bấm xem chi tiết căn hộ `A0101`.
+> 2. Trong phần cư dân, liên kết thành viên mới với vai trò **Chủ hộ** (`owner`) và ngày chuyển vào.
+> 3. Hồ sơ cư dân được liên kết thành công với căn hộ và sẵn sàng để quản lý phương tiện hoặc duyệt tài khoản Zalo Mini App.
+
+## Import hiện tại
+
+Bạn nhập dữ liệu qua **Import căn hộ** hoặc **Import danh sách cư dân**. Biểu mẫu nhận XLSX hoặc CSV, tối đa 5 MB.
+
+<Steps>
+  <Step title="Kiểm tra file">
+    Chọn file rồi bấm **Kiểm tra dữ liệu**. Hệ thống hiển thị dữ liệu và lỗi theo dòng; bước này chưa tạo căn hộ hoặc hồ sơ cư dân.
+  </Step>
+  <Step title="Ghi dữ liệu hợp lệ">
+    Khi dữ liệu hợp lệ, bấm **Ghi dữ liệu vào hệ thống**. Import căn hộ ghi các bản ghi vào tòa nhà đang chọn. Import cư dân đưa dữ liệu vào hàng chờ đối soát, chưa tự tạo hồ sơ hoặc liên kết cư dân–căn hộ.
+  </Step>
+  <Step title="Đối soát cư dân">
+    Với dữ liệu cư dân, mở khu vực đối soát và quyết định tạo hồ sơ mới, gắn hồ sơ có sẵn hoặc bỏ qua từng mục.
+  </Step>
+</Steps>
+
+Xem [Nhập và xuất dữ liệu](/engineering/import-export) để phân biệt luồng xem trước với luồng import tài chính.
+
+## Xử lý lỗi
+
+| Khi gặp | Kiểm tra |
+| --- | --- |
+| Không thấy căn hộ hoặc cư dân cần tìm | Kiểm tra tòa nhà đang chọn. Dữ liệu được giới hạn theo active tower. |
+| Không thấy nút tạo, sửa hoặc xóa | Kiểm tra quyền CRUD của tài khoản trên route hiện tại. |
+| Không tạo được cư dân bằng form generic | Tạo cư dân qua membership workflow. Generic create trả `workflow-required`. |
+| Không thấy **Ghi dữ liệu vào hệ thống** | Chọn file và kiểm tra dữ liệu; chỉ bản xem trước hợp lệ mới có thao tác ghi. |
+
+<Accordion title="Dành cho kỹ thuật">
+  Quan hệ được lưu trong `ResidentApartmentMemberships`. Tạo cư dân mới phải đi qua `/admin/resident-memberships`; generic create cho `residents` bị chặn bằng `workflow-required`. Đổi mã căn hộ dùng transaction chuyên biệt để cập nhật các reference liên quan.
+</Accordion>
+
+Xem quan hệ dữ liệu tại [Domain model](/product-specs/domain-model).

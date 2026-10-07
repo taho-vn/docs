@@ -1,0 +1,61 @@
+---
+title: "Runbooks"
+description: "Các executable operational commands và kiểm tra được current repository cung cấp."
+keywords: ["runbooks", "operations", "verification"]
+---
+
+## Local application
+
+```bash
+yarn db:up
+yarn prisma:generate
+yarn prisma:migrate:deploy
+yarn prisma:seed
+yarn dev
+```
+
+## Application verification
+
+```bash
+yarn test
+yarn test:coverage
+yarn test:e2e
+yarn verify
+```
+
+## Database commands
+
+```bash
+yarn prisma:migrate:deploy
+yarn prisma:migrate:status
+yarn admin:bootstrap
+```
+
+`admin:bootstrap` là specialized script; public docs không công bố bootstrap credentials hoặc environment values.
+
+## Reminder dispatcher
+
+```bash
+yarn reminders:dispatch
+```
+
+Command chạy one-shot dispatcher. Automatic scheduling: `Not Found` trong current source/deployment config.
+
+## Documentation verification
+
+```bash
+npx mint dev
+npx mint validate
+npx mint broken-links --check-anchors --check-redirects
+npx mint a11y
+```
+
+## Source/docs drift review
+
+Khi source snapshot thay đổi, re-count admin routes, HTTP handlers, Prisma models, migrations và tests; sau đó trace affected workflows trước khi sửa behavioral claims.
+
+Ghi commit và các thay đổi chưa commit trong hồ sơ review cho từng lần đối chiếu. Không dùng một snapshot cũ để kết luận mọi trang mô tả đúng source hiện tại.
+
+PM và QA có thể bắt đầu từ [Chỉ mục testcase](/reference/manual-testcases); các mâu thuẫn ảnh hưởng nghiệm thu được nêu tại [Tình trạng tính năng](/reference/release-status).
+
+Xem [Testing](/engineering/testing) và [Deployment](/engineering/deployment) để biết implementation phía sau các command.

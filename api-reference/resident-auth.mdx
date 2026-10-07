@@ -1,0 +1,10 @@
+---
+title: "Xác minh danh tính Zalo"
+description: "Mini App gửi Zalo access token tới backend để nhận token phiên Taho."
+keywords: ["API", "OpenAPI", "POST", "/api/resident/auth/zalo"]
+openapi: "/openapi.json POST /api/resident/auth/zalo"
+---
+
+Không gửi số điện thoại trong body này. Kết quả xác minh hiện có `verifiedPhone` rỗng. Xem [cấu hình môi trường](/engineering/environment-setup) cho các biến verifier.
+
+Endpoint có `OPTIONS` trả 204. Header CORS chỉ được thêm cho origin Zalo được source cho phép; không suy rằng mọi frontend ở origin khác đều được phép gọi từ trình duyệt.

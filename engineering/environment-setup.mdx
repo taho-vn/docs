@@ -1,0 +1,52 @@
+---
+title: "Cấu hình môi trường"
+description: "Chọn nhóm biến cho backend, AI, Mini App, email và lưu ảnh trước khi chạy ứng dụng."
+keywords: ["env", "env example", "cấu hình", "Mini App", "OpenAI"]
+---
+
+Cấu hình môi trường quyết định backend kết nối PostgreSQL và các dịch vụ bên ngoài như thế nào. Mini App có cấu hình frontend riêng; đặt biến vào sai runtime sẽ không bật được luồng cần chạy.
+
+## Bạn cần đọc trang nào?
+
+- [Mẫu env](/reference/env-example): mẫu dùng placeholder và vị trí đặt file.
+- [Danh mục biến môi trường](/reference/environment-variables): ý nghĩa, điều kiện sử dụng và hành vi khi thiếu.
+- [Chạy application local](/engineering/local-development): các lệnh khởi động backend.
+- [Chạy Mini App local](/mini-app/local-development): frontend Vite và các chế độ chạy.
+
+## Chọn cấu hình theo luồng
+
+| Bạn đang chạy gì? | Cấu hình cần đối chiếu |
+| --- | --- |
+| Backend dùng PostgreSQL | `DATABASE_URL`; source từ chối URL trống hoặc không dùng giao thức PostgreSQL. |
+| Phiên quản trị/cư dân | `TAHO_JWT_SECRET`; backend production từ chối khi thiếu. |
+| Chat AI hoặc tải tài liệu tri thức | Khóa OpenAI; model chat/embedding có giá trị mặc định trong source. |
+| Mini App DEV dùng API | Backend/database hoạt động; frontend dùng proxy khi `VITE_TAHO_API_URL` trống. |
+| Mini App gọi xác minh Zalo | `TAHO_ZALO_APP_SECRET`, `TAHO_ZALO_VERIFIER_URL`, `TAHO_ZALO_VERIFIER_SHARED_SECRET` ở backend. |
+| Gửi email nhắc nợ | Cờ gửi, runtime và cấu hình Resend; chỉ đặt API key chưa đủ để gửi. |
+| Upload ảnh công tơ | Nhóm R2; dữ liệu ảnh lưu ở object storage, metadata lưu trong database. |
+
+## Chuẩn bị file cấu hình
+
+<Steps>
+  <Step title="Chuẩn bị backend">
+    Application có `.env.example` ở thư mục gốc. Tạo `.env` trong cùng thư mục và điền các biến cần cho luồng đang chạy theo [mẫu env](/reference/env-example). `prisma.config.ts` dùng `dotenv/config` để đọc cấu hình; runtime Prisma đọc `DATABASE_URL`.
+  </Step>
+  <Step title="Chuẩn bị frontend Mini App">
+    Nếu cần đích API riêng, tạo `resident-miniapp/.env.local` và đặt `VITE_TAHO_API_URL`. Nếu dùng proxy dev có sẵn, bạn có thể để biến này trống.
+
+    Vite đọc `.env.local` từ thư mục env của frontend và nạp biến khi khởi động. Sau khi sửa, khởi động lại Vite; giá trị `VITE_` được đưa vào bundle trình duyệt. Xem [hướng dẫn env của Vite](https://vite.dev/guide/env-and-mode).
+  </Step>
+  <Step title="Chạy và kiểm tra đúng luồng">
+    Khởi động application hoặc Mini App theo hướng dẫn local. Kiểm tra bước sử dụng dịch vụ tương ứng, không chỉ kiểm tra server mở được trang.
+  </Step>
+</Steps>
+
+<Warning>
+  Các biến có tiền tố `VITE_` được frontend dùng trong trình duyệt. Không đặt khóa OpenAI, JWT, Resend, R2 hoặc secret verifier vào nhóm biến này.
+</Warning>
+
+## Khác biệt giữa file mẫu và source
+
+File `.env.example` hiện có tên `TAHO_ZALO_APP_SECRET`, nhưng chưa liệt kê hai biến verifier mà handler xác minh Zalo cũng yêu cầu. `VITE_TAHO_API_URL` được frontend đọc nhưng không nằm trong file mẫu backend. Danh mục và mẫu trong docs bổ sung các tên này theo consumer hiện tại.
+
+Các tên `DIRECT_URL` và `TAHO_DB_*` từng xuất hiện trong docs cũ không có consumer tương ứng trong đường kết nối Prisma hiện tại. Không coi việc thêm chúng vào `.env` là thay đổi cấu hình pool hoặc URL migration.

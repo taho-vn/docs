@@ -1,0 +1,105 @@
+---
+title: "Lập phiếu thu"
+description: "Cách tạo phiếu thu, phân bổ tiền vào công nợ và ghi nhận tiền thừa."
+keywords: ["create receipt", "ReceiptAllocations", "tiền thừa"]
+---
+
+Bạn ghi nhận tiền thu tại **Công nợ - thanh toán** → **Quản lý phiếu thu/chi** → **Lập phiếu thu**. Bạn có thể thanh toán các dòng công nợ đã duyệt hoặc ghi nhận toàn bộ khoản thu vào tiền thừa.
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền lập phiếu thu và đã chọn tòa nhà |
+| Kết quả | Tạo phiếu `posted`, phân bổ tiền, cập nhật công nợ và ghi sổ |
+
+## Trước khi thực hiện
+
+- Căn hộ `active` thuộc tòa nhà đang chọn.
+- Kỳ hạch toán đang mở.
+- Hình thức thanh toán hợp lệ cho tòa nhà.
+- Các dòng được chọn thuộc bảng kê có trạng thái cho phép thu.
+- Tổng tiền phiếu thu bằng tiền phân bổ cộng tiền thừa khai báo.
+
+<Info>
+  Kỳ cần mở là kỳ của **Ngày hạch toán** trên phiếu. Bạn có thể thu nợ từ bảng kê thuộc kỳ phí đã khóa nếu ngày hạch toán nằm trong kỳ đang mở và các điều kiện thu khác hợp lệ.
+</Info>
+
+## Các bước
+
+<Frame caption="Giao diện Lập phiếu thu với các dòng công nợ đã chọn và số tiền thừa tự động tính">
+  <img src="/images/finance/create-receipt-form.png" alt="Form lập phiếu thu dịch vụ" />
+</Frame>
+
+<Steps>
+  <Step title="Mở phiếu thu">Mở **Công nợ - thanh toán** → **Quản lý phiếu thu/chi**, rồi chọn nút **Lập phiếu thu** màu vàng.</Step>
+  <Step title="Chọn căn hộ và hình thức thu">Trong ô **Chọn căn hộ**, chọn mã căn hộ nộp tiền (ví dụ căn `A0101`). Hệ thống tự động điền **Người nộp tiền** và **Địa chỉ** theo chủ hộ. Chọn **Hình thức thu tiền** (Tiền mặt, Chuyển khoản...).</Step>
+  <Step title="Chọn khoản thanh toán và nhập số tiền">
+    Trong **Danh sách hóa đơn**, đánh dấu chọn các dòng cần thu tiền. Hệ thống tự động điền số tiền nợ vào ô **Thanh toán**. Nếu khách nộp thừa, bạn có thể nhập số tiền lớn hơn; phần dư ra sẽ được hệ thống tự động tính vào ô **Tiền thừa**.
+  </Step>
+  <Step title="Kiểm tra tổng tiền">
+    Hệ thống tự động tính **Số tiền** và **Tổng thanh toán** bằng tổng tiền phân bổ cộng với tiền thừa. Dưới bảng hóa đơn có thông báo hướng dẫn rõ số tiền phân bổ và tiền thừa. Bấm **Xem trước** để kiểm tra lại thông tin nếu cần.
+  </Step>
+  <Step title="Thu tiền">Bấm **Thu tiền** để ghi nhận phiếu vào hệ thống hoặc **Thu và in** để vừa lưu vừa mở mẫu in phiếu thu.</Step>
+</Steps>
+
+## Tình huống thực tế: Thu nợ kèm tiền thừa
+
+> **Ví dụ:** Căn hộ `A0101` (chủ hộ: Nguyễn Văn An) thanh toán phí dịch vụ kỳ `07/2026`:
+> - Danh sách hóa đơn có 2 dòng nợ:
+>   - **Điện sinh hoạt**: Còn nợ `462.000 đ`. Khách đưa `662.000 đ` (dư 200.000 đ).
+>   - **Nước sinh hoạt**: Còn nợ `225.000 đ`. Khách trả đủ `225.000 đ`.
+> - **Cách hệ thống xử lý:**
+>   - Phân bổ trả hết nợ Điện: `462.000 đ`.
+>   - Phân bổ trả hết nợ Nước: `225.000 đ`.
+>   - Tổng phân bổ công nợ: `687.000 đ`.
+>   - Tiền thừa tự động tính: `200.000 đ` (chuyển vào sổ theo dõi tiền thừa để cấn trừ các kỳ sau).
+>   - Tổng tiền phiếu thu: `887.000 đ`.
+
+## Quy tắc phân bổ và trường hợp biên
+
+| Khi bạn thực hiện | Kết quả |
+| --- | --- |
+| Trả ít hơn số còn nợ của một dòng | Phần thanh toán được phân bổ; dòng vẫn còn nợ |
+| Trả đúng số còn nợ | Dòng được thanh toán hết |
+| Nhập **Thanh toán** lớn hơn số còn nợ | Giao diện chỉ phân bổ đến số còn nợ; phần vượt chuyển thành **Tiền thừa** |
+| Không chọn dòng, nhập **Tiền thừa** lớn hơn 0 | Tạo phiếu và ghi sổ tiền thừa; không tạo phân bổ hoặc thay đổi công nợ |
+| Đổi căn hộ sau khi chọn dòng | Xóa lựa chọn và tiền thừa đang nhập; điền lại người nộp và địa chỉ theo căn hộ |
+| Dòng hiển thị không có chi tiết phí để phân bổ | Ô chọn dòng bị vô hiệu hóa |
+
+<Info>
+  **Xem trước** chỉ mở bản xem trước trên giao diện. Phiếu được lưu khi bạn bấm **Thu tiền** hoặc **Thu và in** và yêu cầu thành công.
+</Info>
+
+## Khi hệ thống không tạo phiếu
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Thiếu trường dữ liệu phân bổ trong yêu cầu | Trả lỗi; khác với danh sách rỗng khi thu toàn bộ vào tiền thừa |
+| Chưa cấu hình hình thức thu tiền hoặc số tiền chưa hợp lệ | **Thu tiền** và **Thu và in** bị vô hiệu hóa |
+| Tổng tiền không khớp | Không ghi dữ liệu |
+| Số phân bổ gửi đến server vượt số còn nợ | Không tạo phiếu |
+| Số nợ tại thời điểm cập nhật không còn đủ cho khoản phân bổ | Không tạo phiếu; tải lại dữ liệu trước khi thử lại |
+
+Xem [Use case và workflow](/product-specs/workflow-specifications) để tra sơ đồ và Acceptance Criteria; xem [Hủy phiếu thu](/finance/cancel-receipt) cho thao tác đảo phiếu đã ghi.
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:create_receipt`, người dùng có thể tạo phiếu thu `posted` và phân bổ tiền vào các dòng công nợ hợp lệ.
+
+  ### Acceptance criteria
+
+  - **Given** căn hộ, kỳ, hình thức thanh toán và phân bổ hợp lệ, **when** gửi intent `create-receipt`, **then** hệ thống tạo phiếu, allocation và cập nhật công nợ trong một transaction.
+  - **Given** tổng tiền không bằng phân bổ cộng tiền thừa, **when** gửi yêu cầu, **then** hệ thống không tạo phiếu.
+  - **Given** công nợ tại thời điểm cập nhật không còn đủ cho số phân bổ, **when** ghi phiếu, **then** transaction bị từ chối.
+
+  ### Dữ liệu và kiểm thử
+
+  `ServiceReceiptForm` → `POST /admin/workflow` với intent `create-receipt` → `createReceiptWithAllocation()` → Prisma transaction.
+
+  Transaction ghi `Receipts`, `Cashbook` hoặc `Bankbook` và `AuditLogs`. Khi có phân bổ, transaction tạo `ReceiptAllocations` và cập nhật `Bills`, `BillLines`. Khi có tiền thừa, transaction ghi thêm `ExcessPaymentLedger`. Mọi thay đổi trong transaction được hoàn tác nếu có lỗi.
+
+  Kiểm tra cập nhật dòng phí dùng điều kiện `debt >= allocated`, không so sánh `version` cũ. Vì vậy, không phải mọi thay đổi công nợ đồng thời đều bị từ chối.
+
+  Kiểm thử partial, full allocation, tiền thừa, hình thức sai tòa nhà và concurrent debt change nằm trong `test/financial-workflows.test.ts`.
+</Accordion>

@@ -1,0 +1,50 @@
+---
+title: "Cấu hình hệ thống"
+description: "Cách quản lý cấu hình tòa nhà, danh mục hạch toán và khóa kỳ tài chính."
+keywords: ["configuration", "cycle locks", "buildings"]
+---
+
+Bạn dùng khu vực cấu hình để quản lý thông tin tòa nhà, danh mục hạch toán, hình thức phiếu thu và khóa kỳ tài chính.
+
+## Các màn hình đang có
+
+| Màn hình | Nội dung quản lý |
+| --- | --- |
+| **Tổng Quan dự án** | Quản trị công ty thêm tòa nhà, đổi tên và đổi trạng thái tòa nhà |
+| **Cẩm nang tòa nhà** | Bài viết và danh mục cẩm nang |
+| **Danh sách các phân khu** | Các khu vực/phân khu của tòa nhà |
+| **Tài khoản hạch toán** | Danh mục tài khoản kế toán |
+| **Hình thức phiếu thu** | Hình thức và nhãn dùng cho phiếu thu/chi |
+| **Danh sách cấu hình toà nhà** | Các record cấu hình của tòa nhà |
+| **Quản lý khóa kỳ** | Mở hoặc khóa kỳ theo tháng |
+
+## Khóa kỳ tài chính
+
+<Steps>
+  <Step title="Mở Quản lý khóa kỳ">
+    Chọn **Thêm mới** và nhập kỳ theo định dạng tháng `YYYY-MM`.
+  </Step>
+  <Step title="Chọn trạng thái">
+    Dùng `open` cho kỳ được phép ghi hoặc `locked` cho kỳ đã khóa.
+  </Step>
+  <Step title="Lưu bản ghi">
+    Khi kỳ bị khóa, các workflow tài chính liên quan sẽ kiểm tra và từ chối ghi dữ liệu vào kỳ đó.
+  </Step>
+</Steps>
+
+<Info>
+  Khóa kỳ phí không đồng nghĩa cấm thu mọi khoản nợ của kỳ đó. Khi lập phiếu thu, hệ thống kiểm tra kỳ của **Ngày hạch toán**. Hủy phiếu kiểm tra kỳ hạch toán của phiếu; nếu cần đảo khoản đã cấn trừ từ tiền thừa, hệ thống còn kiểm tra kỳ của bảng kê nhận khoản đó.
+</Info>
+
+## Xử lý lỗi
+
+| Khi gặp | Kiểm tra |
+| --- | --- |
+| Không ghi được dữ liệu tài chính trong một tháng | Kiểm tra tháng đó có `CycleLocks.status = locked` hay không. |
+| Không thấy thao tác khóa kỳ | Tài khoản cần action permission `lock_period`. |
+
+<Accordion title="Dành cho kỹ thuật">
+  `cycle_locks` yêu cầu action `lock_period`; `feedback_forms` yêu cầu `manage_feedback_forms`. Các danh mục còn lại trong trang này dùng generic repository path khi route policy và CRUD permission cho phép.
+</Accordion>
+
+Xem các status hiện có tại [Error/status catalog](/reference/error-status-catalog).

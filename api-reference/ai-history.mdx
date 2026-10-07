@@ -1,0 +1,8 @@
+---
+title: "Đọc lịch sử AI"
+description: "Đọc danh sách cuộc trò chuyện hoặc tin nhắn theo chủ và tòa nhà."
+keywords: ["API", "OpenAPI", "GET", "/admin/ai/chat"]
+openapi: "/openapi.json GET /admin/ai/chat"
+---
+
+GET trả 401 cả khi không có phiên lẫn khi không có quyền route AI. POST cùng route phân biệt 401 thiếu phiên và 403 thiếu quyền. Danh sách thread lấy tối đa 50 mục; tin nhắn lấy tối đa 100 mục cũ đến mới.

@@ -1,0 +1,58 @@
+---
+title: "Chạy application local"
+description: "Cách khởi động application và documentation từ scripts hiện tại."
+keywords: ["local development", "Next.js", "Mintlify"]
+---
+
+## Application
+
+Source hiện dùng Yarn, PostgreSQL và Prisma. Từ application repository:
+
+Trước khi chạy, chuẩn bị cấu hình theo [Cấu hình môi trường](/engineering/environment-setup) và [Mẫu env](/reference/env-example). `DATABASE_URL` phải trỏ tới database local bạn sẽ sử dụng.
+
+```bash
+yarn install
+yarn db:up
+yarn prisma:generate
+yarn prisma:migrate:deploy
+yarn prisma:seed
+yarn dev
+```
+
+`yarn db:up` gọi Docker Compose service `postgres` từ `compose.yaml`. `yarn dev` chạy Next.js development server.
+
+Không đưa seed credentials từ application repository vào public docs.
+
+## Mini App và API
+
+- [Chỉ mục Mini App](/mini-app/index): chức năng, quyền căn hộ và ranh giới frontend/backend.
+- [Chạy Mini App local](/mini-app/local-development): Vite DEV, dữ liệu mẫu và bản build.
+- [API / Swagger](/api-reference/index): hợp đồng request/response; đặc tả OpenAPI thuộc docs.
+
+## Documentation
+
+Từ repository chứa `docs.json`:
+
+```bash
+npx mint dev
+```
+
+## Verification commands
+
+Application:
+
+```bash
+yarn test
+yarn test:e2e
+yarn verify
+```
+
+Documentation:
+
+```bash
+npx mint validate
+npx mint broken-links --check-anchors --check-redirects
+npx mint a11y
+```
+
+Các command khác được index tại [Runbooks](/reference/runbooks).

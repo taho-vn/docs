@@ -1,0 +1,46 @@
+---
+title: "Duyệt điều chỉnh công nợ"
+description: "Cách áp dụng một điều chỉnh draft vào dòng phí và công nợ."
+keywords: ["approve adjustment", "BillingAdjustmentLines", "debt"]
+---
+
+| Tóm tắt | Nội dung |
+| --- | --- |
+| Trạng thái | `Implemented` |
+| Người thực hiện | Tài khoản có quyền duyệt điều chỉnh và đã chọn tòa nhà |
+| Kết quả | Cập nhật dòng phí và công nợ; điều chỉnh chuyển sang `approved` |
+
+## Trước khi thực hiện
+
+- Điều chỉnh thuộc tòa nhà đang chọn và có trạng thái `draft`.
+- Kỳ hạch toán của điều chỉnh đang mở.
+- Điều chỉnh và các dòng phí nguồn chưa thay đổi sau khi tạo bản nháp.
+
+## Các bước
+
+<Steps>
+  <Step title="Chọn bản nháp">Chọn điều chỉnh cần duyệt.</Step>
+  <Step title="Duyệt">Hệ thống so sánh dòng phí hiện tại với dữ liệu đã lưu trong bản nháp.</Step>
+  <Step title="Xem kết quả">Hệ thống cập nhật dòng phí, số đã thu, số còn nợ và trạng thái bảng kê.</Step>
+</Steps>
+
+## Khi hệ thống không duyệt
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Điều chỉnh không còn `draft` | Không duyệt |
+| Kỳ đã khóa | Không duyệt |
+| Điều chỉnh hoặc dòng nguồn đã đổi | Yêu cầu tải lại hoặc tạo lại điều chỉnh |
+
+<Accordion title="Dành cho BA, QA và kỹ thuật">
+  ### User story
+
+  Với tài khoản có quyền `action:approve_billing_adjustment`, người dùng có thể áp dụng một điều chỉnh `draft` còn hợp lệ.
+
+  ### Acceptance criteria
+
+  - **Given** điều chỉnh còn `draft`, kỳ đang mở và dòng nguồn không đổi, **when** gửi intent `approve-adjustment`, **then** điều chỉnh chuyển sang `approved` và công nợ được tính lại.
+  - **Given** dữ liệu nguồn đã đổi, **when** duyệt, **then** hệ thống không áp dụng điều chỉnh.
+
+  Transaction cập nhật `BillingAdjustments`, `BillingAdjustmentLines`, `BillLines`, `Bills` và `AuditLogs`; có thể ghi `ExcessPaymentLedger` khi giảm số phải thu tạo credit. Kiểm thử nằm trong `test/financial-workflows.test.ts`.
+</Accordion>
