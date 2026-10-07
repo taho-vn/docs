@@ -26,13 +26,34 @@ Bạn ghi nhận tiền thu tại **Công nợ - thanh toán** → **Quản lý 
 
 ## Các bước
 
+<Frame caption="Giao diện Lập phiếu thu với các dòng công nợ đã chọn và số tiền thừa tự động tính">
+  <img src="/images/finance/create-receipt-form.png" alt="Form lập phiếu thu dịch vụ" />
+</Frame>
+
 <Steps>
-  <Step title="Mở phiếu thu">Mở **Công nợ - thanh toán** → **Quản lý phiếu thu/chi**, rồi chọn **Lập phiếu thu**. Bạn cần quyền truy cập màn hình và quyền lập phiếu thu.</Step>
-  <Step title="Nhập thông tin">Chọn **Chọn căn hộ**, **Hình thức thu tiền**, kiểm tra **Người nộp tiền**, **Ngày hạch toán** và nhập **Nội dung thu tiền**. Bạn có thể sửa **Địa chỉ**.</Step>
-  <Step title="Chọn khoản thanh toán">Trong **Danh sách hóa đơn**, đánh dấu các dòng cần thu và nhập số tiền ở cột **Thanh toán**. Nếu không chọn dòng nào, nhập **Tiền thừa** lớn hơn 0 để ghi nhận toàn bộ khoản thu vào tiền thừa.</Step>
-  <Step title="Kiểm tra tổng tiền">**Số tiền** và **Tổng thanh toán** được tính tự động. Khi đã chọn dòng công nợ, **Tiền thừa** cũng được tính tự động từ phần thanh toán vượt số còn nợ. Bấm **Xem trước** để kiểm tra căn hộ, người nộp, tổng thanh toán và số khoản đã chọn.</Step>
-  <Step title="Thu tiền">Bấm **Thu tiền** để ghi phiếu hoặc **Thu và in** để ghi phiếu rồi mở phần chứng từ của phiếu vừa tạo. Khi thành công, hệ thống hiển thị **Đã lập phiếu thu và phân bổ đúng các dòng công nợ đã chọn.**</Step>
+  <Step title="Mở phiếu thu">Mở **Công nợ - thanh toán** → **Quản lý phiếu thu/chi**, rồi chọn nút **Lập phiếu thu** màu vàng.</Step>
+  <Step title="Chọn căn hộ và hình thức thu">Trong ô **Chọn căn hộ**, chọn mã căn hộ nộp tiền (ví dụ căn `A0101`). Hệ thống tự động điền **Người nộp tiền** và **Địa chỉ** theo chủ hộ. Chọn **Hình thức thu tiền** (Tiền mặt, Chuyển khoản...).</Step>
+  <Step title="Chọn khoản thanh toán và nhập số tiền">
+    Trong **Danh sách hóa đơn**, đánh dấu chọn các dòng cần thu tiền. Hệ thống tự động điền số tiền nợ vào ô **Thanh toán**. Nếu khách nộp thừa, bạn có thể nhập số tiền lớn hơn; phần dư ra sẽ được hệ thống tự động tính vào ô **Tiền thừa**.
+  </Step>
+  <Step title="Kiểm tra tổng tiền">
+    Hệ thống tự động tính **Số tiền** và **Tổng thanh toán** bằng tổng tiền phân bổ cộng với tiền thừa. Dưới bảng hóa đơn có thông báo hướng dẫn rõ số tiền phân bổ và tiền thừa. Bấm **Xem trước** để kiểm tra lại thông tin nếu cần.
+  </Step>
+  <Step title="Thu tiền">Bấm **Thu tiền** để ghi nhận phiếu vào hệ thống hoặc **Thu và in** để vừa lưu vừa mở mẫu in phiếu thu.</Step>
 </Steps>
+
+## Tình huống thực tế: Thu nợ kèm tiền thừa
+
+> **Ví dụ:** Căn hộ `A0101` (chủ hộ: Nguyễn Văn An) thanh toán phí dịch vụ kỳ `07/2026`:
+> - Danh sách hóa đơn có 2 dòng nợ:
+>   - **Điện sinh hoạt**: Còn nợ `462.000 đ`. Khách đưa `662.000 đ` (dư 200.000 đ).
+>   - **Nước sinh hoạt**: Còn nợ `225.000 đ`. Khách trả đủ `225.000 đ`.
+> - **Cách hệ thống xử lý:**
+>   - Phân bổ trả hết nợ Điện: `462.000 đ`.
+>   - Phân bổ trả hết nợ Nước: `225.000 đ`.
+>   - Tổng phân bổ công nợ: `687.000 đ`.
+>   - Tiền thừa tự động tính: `200.000 đ` (chuyển vào sổ theo dõi tiền thừa để cấn trừ các kỳ sau).
+>   - Tổng tiền phiếu thu: `887.000 đ`.
 
 ## Quy tắc phân bổ và trường hợp biên
 

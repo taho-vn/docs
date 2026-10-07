@@ -127,6 +127,45 @@ ${constraints}
 </Accordion>`;
 }
 
+function renderGroupErDiagram(group, byName) {
+  const modelNames = new Set(group.models);
+  const relations = [];
+  const seen = new Set();
+
+  for (const modelName of group.models) {
+    const model = byName.get(modelName);
+    if (!model) continue;
+    for (const field of model.fields) {
+      if (!field.relation) continue;
+      const targetModel = field.type.replace(/[?\[\]]/gu, "");
+      if (!modelNames.has(targetModel)) continue;
+
+      if (field.type.endsWith("[]")) {
+        const pairKey = `${modelName}->${targetModel}:${field.name}`;
+        if (!seen.has(pairKey)) {
+          seen.add(pairKey);
+          relations.push(`  ${modelName} ||--o{ ${targetModel} : "${field.name}"`);
+        }
+      } else if (!field.type.includes("[")) {
+        const targetObj = byName.get(targetModel);
+        const hasListInverse = targetObj?.fields.some(
+          (f) => f.relation && f.type.replace(/[?\[\]]/gu, "") === modelName && f.type.endsWith("[]"),
+        );
+        if (!hasListInverse) {
+          const pairKey = [modelName, targetModel].sort().join("<->");
+          if (!seen.has(pairKey)) {
+            seen.add(pairKey);
+            relations.push(`  ${modelName} ||--|| ${targetModel} : "${field.name}"`);
+          }
+        }
+      }
+    }
+  }
+
+  if (!relations.length) return "";
+  return `### Sơ đồ quan hệ thực thể (ERD)\n\n\`\`\`mermaid\nerDiagram\n${relations.join("\n")}\n\`\`\`\n\n`;
+}
+
 function renderDictionary(models, schemaFingerprint) {
   const byName = new Map(models.map((model) => [model.name, model]));
   const configured = groups.flatMap((group) => group.models);
@@ -141,7 +180,7 @@ function renderDictionary(models, schemaFingerprint) {
 
 ${group.description}
 
-<AccordionGroup>
+${renderGroupErDiagram(group, byName)}<AccordionGroup>
 ${group.models.map((name) => renderModel(byName.get(name))).join("\n\n")}
 </AccordionGroup>`).join("\n\n");
 

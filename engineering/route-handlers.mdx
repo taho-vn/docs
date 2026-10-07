@@ -88,6 +88,62 @@ Handler kiểm tra nguồn request, phiên, màn hình nằm trong danh sách ch
 
 `jsonRedirect()` trả JSON chứa đích điều hướng, không phải HTTP 302. Lỗi database đi qua `mapDatabaseError()` và dùng mã/status từ bộ ánh xạ đó. Không áp dụng bảng response này cho mọi handler khác.
 
+### Ví dụ request và response mẫu
+
+```bash
+# Gửi yêu cầu tính công nợ kỳ 2026-07
+curl -X POST "<APP_URL>/admin/workflow" \
+  -H "Origin: <APP_URL>" \
+  -H "Cookie: taho_session=<SESSION_COOKIE>" \
+  -F "intent=calculate-billing" \
+  -F "returnTo=/admin/electric-meter" \
+  -F "period=2026-07" \
+  -F "dueDate=2026-08-15"
+```
+
+Response khi thành công (HTTP 200):
+
+```json
+{
+  "success": true,
+  "redirectTo": "<APP_URL>/admin/electric-meter?notice=billing-calculated&count=2",
+  "data": {
+    "notice": "billing-calculated",
+    "count": 2
+  }
+}
+```
+
+Response khi phiên đăng nhập hết hạn hoặc chưa đăng nhập (HTTP 401):
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "unauthorized",
+    "message": "Authentication is required",
+    "details": {
+      "redirectTo": "<APP_URL>/login"
+    }
+  }
+}
+```
+
+Response khi không đủ quyền thao tác trên route (HTTP 403):
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "forbidden",
+    "message": "Financial workflow request failed",
+    "details": {
+      "redirectTo": "<APP_URL>/admin?error=forbidden"
+    }
+  }
+}
+```
+
 Xem hướng dẫn [Tính công nợ](/finance/calculate-billing), [Lập phiếu thu](/finance/create-receipt) và [Use case và workflow](/product-specs/workflow-specifications) để đối chiếu hành vi với màn hình.
 
 ## Response behavior

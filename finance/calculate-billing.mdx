@@ -21,12 +21,31 @@ Bạn tạo bảng kê nháp tại **Công nợ - thanh toán** → **Chỉ số
 
 ## Các bước
 
+<Frame caption="Form tính công nợ theo kỳ trên màn hình Chỉ số điện nước">
+  <img src="/images/finance/calculate-billing-form.png" alt="Form tính công nợ theo kỳ" />
+</Frame>
+
 <Steps>
-  <Step title="Mở màn hình tính công nợ">Chọn tòa nhà cần làm việc. Mở **Công nợ - thanh toán** → **Chỉ số điện nước** và tìm **Tính công nợ theo kỳ**. Phần này chỉ hiển thị khi bạn có quyền tính công nợ.</Step>
-  <Step title="Nhập kỳ và hạn thanh toán">Nhập **Kỳ tính phí** và **Hạn thanh toán**. Nhập **Mã căn hộ (không bắt buộc)** nếu chỉ tính cho một số căn hộ; phân cách nhiều mã bằng dấu phẩy, dấu chấm phẩy hoặc khoảng trắng.</Step>
-  <Step title="Tính công nợ">Bấm **Tính công nợ**. Hệ thống đọc căn hộ, dịch vụ đang áp dụng và chỉ số của kỳ trong tòa nhà đang chọn.</Step>
-  <Step title="Kiểm tra kết quả">Khi thành công, màn hình hiển thị **Đã tính công nợ và tạo bảng kê nháp kèm các dòng phí.** Bảng kê mới vẫn là bản nháp; thực hiện [Duyệt bảng kê](/finance/approve-bill) để chuyển sang trạng thái cho phép thu.</Step>
+  <Step title="Mở màn hình tính công nợ">Chọn tòa nhà cần làm việc. Mở **Công nợ - thanh toán** → **Chỉ số điện nước** và tìm phần **Tính công nợ theo kỳ** ở cuối trang. Phần này chỉ hiển thị khi tài khoản có quyền tính phí.</Step>
+  <Step title="Nhập kỳ và hạn thanh toán">Chọn **Kỳ tính phí** (ví dụ tháng 7/2026) và **Hạn thanh toán** (ví dụ 15/08/2026). Để trống **Mã căn hộ** nếu muốn tính cho toàn bộ tòa nhà, hoặc nhập danh sách mã căn hộ cần tính (phân cách bằng dấu phẩy).</Step>
+  <Step title="Bấm Tính công nợ">Bấm nút **Tính công nợ**. Hệ thống sẽ đọc dịch vụ đang áp dụng cùng chỉ số điện nước đã chốt của kỳ để tạo bảng kê nháp.</Step>
+  <Step title="Kiểm tra thông báo kết quả">
+    Khi hoàn tất, hệ thống hiện thông báo xác nhận: **Đã tính công nợ và tạo bảng kê nháp kèm các dòng phí.**
+
+    <Frame caption="Thông báo thành công sau khi hoàn tất tính công nợ nháp">
+      <img src="/images/finance/calculate-billing-result.png" alt="Thông báo tính công nợ thành công" />
+    </Frame>
+
+    Bảng kê mới tạo ở trạng thái **Chờ duyệt**; tiếp tục mở [Duyệt bảng kê](/finance/approve-bill) để kiểm tra số liệu trước khi thu tiền.
+  </Step>
 </Steps>
+
+## Tình huống thực tế
+
+> **Ví dụ:** Ban quản lý tính phí tháng `07/2026` cho tòa nhà:
+> - **Căn hộ A0101**: Có chỉ số Nước tiêu thụ 15 m³ (225.000 đ) và Điện tiêu thụ 132 kWh (462.000 đ). Hệ thống tạo bảng kê nháp tổng phát sinh `687.000 đ`.
+> - **Căn hộ A0102**: Có chỉ số Nước tiêu thụ 12 m³ (180.000 đ). Hệ thống tạo bảng kê nháp tổng phát sinh `180.000 đ`.
+> - Cả 2 bảng kê được đưa vào danh sách **Duyệt số liệu** để người phụ trách kiểm tra lại.
 
 <Info>
   Để trống **Mã căn hộ (không bắt buộc)** nghĩa là tính cho tất cả căn hộ đang hoạt động trong tòa nhà. Nếu bất kỳ căn hộ nào trong phạm vi đã có bảng kê còn hiệu lực cùng kỳ, toàn bộ yêu cầu bị từ chối.

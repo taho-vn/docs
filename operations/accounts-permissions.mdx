@@ -8,6 +8,10 @@ Bạn dùng khu vực **Tài khoản - phân quyền** để tạo nhân viên �
 
 ## Tạo tài khoản nhân viên
 
+<Frame caption="Màn hình quản lý người dùng và danh sách tài khoản nhân viên">
+  <img src="/images/operations/manage-user.png" alt="Quản lý người dùng" />
+</Frame>
+
 <Steps>
   <Step title="Mở Quản lý người dùng">
     Chọn **Thêm nhân viên**.
@@ -23,11 +27,23 @@ Bạn dùng khu vực **Tài khoản - phân quyền** để tạo nhân viên �
   </Step>
 </Steps>
 
+## Tình huống thực tế
+
+> **Ví dụ:** Tiếp nhận nhân viên kế toán mới vào ban quản lý tòa nhà:
+> 1. Mở **Quản lý người dùng**, bấm **Thêm nhân viên**.
+> 2. Điền mã nhân viên, họ tên, email công việc và mật khẩu ban đầu.
+> 3. Chọn tòa nhà phân công và gán nhóm quyền **Kế toán** (có quyền duyệt bảng kê, lập phiếu thu, đối soát).
+> 4. Lưu tài khoản. Nhân viên đăng nhập và chỉ thấy các phân hệ kế toán thuộc tòa nhà được chỉ định.
+
 ## Gán quyền cho người dùng
 
 Mở chi tiết người dùng rồi chọn **Phân quyền người dùng** để thay toàn bộ danh sách tòa nhà và nhóm quyền hiện tại. Thay đổi có hiệu lực ở lần request tiếp theo vì authorization được đọc lại từ database.
 
 ## Quản lý nhóm quyền
+
+<Frame caption="Danh sách nhóm quyền và quản lý phân quyền chức năng trong hệ thống">
+  <img src="/images/operations/permission-groups.png" alt="Danh sách nhóm quyền" />
+</Frame>
 
 Trong **Danh sách nhóm quyền**, bạn có thể tạo nhóm, đổi tên, mô tả và chọn tập quyền của nhóm. Tên nhóm trùng hoặc permission ID không hợp lệ bị từ chối.
 

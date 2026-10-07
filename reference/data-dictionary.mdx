@@ -27,6 +27,34 @@ Model tồn tại trong schema không tự chứng minh workflow tạo/sửa/xó
 
 Tòa nhà, tài khoản đăng nhập, hồ sơ nhân sự và grouped RBAC.
 
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  Organizations ||--o{ Towers : "towers"
+  Organizations ||--o{ Users : "users"
+  Organizations ||--o{ AuthUsers : "accounts"
+  Organizations ||--o{ PermissionGroups : "permission_groups"
+  Organizations ||--o{ OrganizationAuditLogs : "audit_logs"
+  Organizations ||--o{ OrganizationOnboardingRequests : "onboarding_requests"
+  Towers ||--o{ Users : "organization_users"
+  Towers ||--o{ UserBuildings : "organization_assignments"
+  Towers ||--o{ UserBuildings : "user_buildings"
+  Towers ||--o{ Users : "users"
+  AuthUsers ||--o{ OrganizationAuditLogs : "organization_audits"
+  AuthUsers ||--o{ OrganizationOnboardingRequests : "onboarding_requests"
+  Users ||--o{ AuthUsers : "organization_accounts"
+  Users ||--o{ UserBuildings : "organization_buildings"
+  Users ||--o{ UserPermissionGroups : "organization_groups"
+  Users ||--|| AuthUsers : "auth_user"
+  Users ||--o{ UserBuildings : "buildings"
+  Users ||--o{ UserPermissionGroups : "permission_groups"
+  PermissionGroups ||--o{ UserPermissionGroups : "organization_assignments"
+  PermissionGroups ||--o{ UserPermissionGroups : "users"
+  PermissionGroups ||--o{ PermissionGroupPermissions : "permissions"
+  Permissions ||--o{ PermissionGroupPermissions : "groups"
+```
+
 <AccordionGroup>
 <Accordion title="Organizations — organizations">
 
@@ -420,6 +448,19 @@ Không có model-level constraint ngoài field attributes trong Prisma schema.
 ## Căn hộ, cư dân và phương tiện
 
 Căn hộ, hồ sơ cư dân, membership, reconciliation import và phương tiện.
+
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  Apartments ||--o{ ResidentApartmentMemberships : "resident_memberships"
+  Apartments ||--o{ Vehicles : "vehicles"
+  Apartments ||--o{ ResidentImportReconciliationItems : "residentImportItems"
+  Apartments ||--o{ ResidentMiniappLinks : "residentMiniappLinks"
+  Residents ||--o{ ResidentApartmentMemberships : "apartment_memberships"
+  Residents ||--o{ ResidentImportReconciliationItems : "import_reconciliation_items"
+  Residents ||--o{ ResidentMiniappLinks : "miniapp_links"
+```
 
 <AccordionGroup>
 <Accordion title="Apartments — apartments">
@@ -905,6 +946,25 @@ Dịch vụ, assignment, chỉ số, đối tác, danh mục thu và khóa kỳ.
 ## Công nợ, thu chi và sổ quỹ
 
 Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch và audit.
+
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  Bills ||--o{ BillLines : "lines"
+  Bills ||--o{ ReceiptAllocations : "allocations"
+  Bills ||--o{ BillingAdjustments : "adjustments"
+  Bills ||--o{ BillingAdjustmentLines : "adjustmentLines"
+  BillLines ||--o{ ReceiptAllocations : "allocations"
+  BillLines ||--o{ BillingAdjustmentLines : "adjustmentLines"
+  BillingAdjustments ||--o{ BillingAdjustmentLines : "lines"
+  BillingAdjustments ||--o{ ExcessPaymentLedger : "excess_ledger"
+  BillingAdjustments ||--o{ ReceiptAllocations : "allocations"
+  Receipts ||--o{ ReceiptAllocations : "allocations"
+  Receipts ||--o{ ExcessPaymentLedger : "excess_ledger"
+  Receipts ||--o{ Cashbook : "cashbook_entries"
+  Receipts ||--o{ Bankbook : "bankbook_entries"
+```
 
 <AccordionGroup>
 <Accordion title="Bills — bills">
@@ -1778,6 +1838,13 @@ Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và 
 
 Campaign, notification job, provider event và suppression.
 
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  BillingReminderCampaigns ||--o{ Notifications : "notifications"
+```
+
 <AccordionGroup>
 <Accordion title="BillingReminderCampaigns — billing_reminder_campaigns">
 
@@ -1931,6 +1998,13 @@ Campaign, notification job, provider event và suppression.
 ## Import
 
 Preview, commit state và lỗi theo dòng của file import.
+
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  ImportHistory ||--o{ ImportErrors : "errors"
+```
 
 <AccordionGroup>
 <Accordion title="ImportHistory — import_history">
@@ -2196,6 +2270,14 @@ Không có Prisma relation field.
 ## AI knowledge và chat
 
 Tài liệu tri thức, đoạn nội dung, cuộc hội thoại, tin nhắn và giới hạn truy cập AI trong schema.
+
+### Sơ đồ quan hệ thực thể (ERD)
+
+```mermaid
+erDiagram
+  AiKnowledgeDocuments ||--o{ AiKnowledgeChunks : "chunks"
+  AiChatThreads ||--o{ AiChatMessages : "messages"
+```
 
 <AccordionGroup>
 <Accordion title="AiKnowledgeDocuments — ai_knowledge_documents">
