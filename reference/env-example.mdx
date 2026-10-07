@@ -1,0 +1,80 @@
+---
+title: "Mẫu env"
+description: "Mẫu cấu hình bằng placeholder cho backend Taho và frontend Mini App, kèm nhóm biến cần điền."
+keywords: [".env.example", ".env", "VITE_TAHO_API_URL", "cấu hình"]
+---
+
+Các mẫu dưới đây do docs biên soạn từ tên biến và validation trong source. Chúng không sao chép giá trị từ file môi trường của application. Thay placeholder của nhóm cần dùng bằng cấu hình riêng của môi trường local.
+
+## Backend
+
+Tạo `.env` ở thư mục gốc application. Mẫu đầy đủ cho các nhóm đã đối chiếu:
+
+```dotenv
+# PostgreSQL và phiên
+DATABASE_URL="<POSTGRES_CONNECTION_STRING>"
+TAHO_JWT_SECRET="<SESSION_SIGNING_SECRET>"
+
+# Bootstrap quản trị nền tảng, chỉ khi chạy lệnh tương ứng
+TAHO_BOOTSTRAP_ADMIN_NAME="<ADMIN_DISPLAY_NAME>"
+TAHO_BOOTSTRAP_ADMIN_EMAIL="<ADMIN_EMAIL>"
+TAHO_BOOTSTRAP_ADMIN_PASSWORD="<ADMIN_PASSWORD>"
+
+# AI
+TAHO_OPENAI_API_KEY="<OPENAI_API_KEY>"
+TAHO_OPENAI_CHAT_MODEL="<CHAT_MODEL>"
+TAHO_OPENAI_EMBEDDING_MODEL="<EMBEDDING_MODEL>"
+
+# Xác minh danh tính Mini App
+TAHO_ZALO_APP_SECRET="<ZALO_APP_SECRET>"
+TAHO_ZALO_VERIFIER_URL="<VERIFIER_URL>"
+TAHO_ZALO_VERIFIER_SHARED_SECRET="<VERIFIER_SHARED_SECRET>"
+
+# Email
+TAHO_RUNTIME_ENV="<RUNTIME_ENVIRONMENT>"
+TAHO_EMAIL_DELIVERY_ENABLED="<DELIVERY_FLAG>"
+TAHO_RESEND_API_KEY="<RESEND_API_KEY>"
+TAHO_RESEND_WEBHOOK_SECRET="<WEBHOOK_SECRET>"
+TAHO_EMAIL_FROM="<SENDER_ADDRESS>"
+TAHO_EMAIL_REPLY_TO="<REPLY_TO_ADDRESS>"
+
+# Ảnh công tơ
+TAHO_R2_ACCOUNT_ID="<STORAGE_ACCOUNT_ID>"
+TAHO_R2_ACCESS_KEY_ID="<STORAGE_ACCESS_KEY_ID>"
+TAHO_R2_SECRET_ACCESS_KEY="<STORAGE_SECRET_ACCESS_KEY>"
+TAHO_R2_BUCKET_NAME="<STORAGE_BUCKET>"
+TAHO_R2_ENDPOINT="<STORAGE_ENDPOINT>"
+TAHO_R2_ALLOW_INSECURE_LOCAL_ENDPOINT="<LOCAL_HTTP_FLAG>"
+
+# Analytics và seed demo
+NEXT_PUBLIC_GA_ID="<ANALYTICS_ID>"
+TAHO_ENABLE_DEMO_SEED="<DEMO_SEED_FLAG>"
+```
+
+<Info>
+  Không dán nguyên placeholder rồi coi hệ thống đã được cấu hình. Ví dụ khóa OpenAI là chuỗi không rỗng nên có thể đi qua kiểm tra cấu hình trước khi bị provider từ chối. Với model AI, để trống hoặc bỏ biến nếu muốn dùng giá trị mặc định trong source.
+</Info>
+
+| Nhóm | Cách điền theo validation hiện tại |
+| --- | --- |
+| PostgreSQL | URL dùng giao thức `postgres:` hoặc `postgresql:`; dùng database local riêng. |
+| JWT | Chuỗi secret do bạn quản lý; bắt buộc khi backend ở `NODE_ENV=production`. |
+| Bootstrap | Email hợp lệ; mật khẩu ít nhất 12 ký tự, có chữ và số. Các biến này phục vụ lệnh bootstrap, không phải form đăng nhập. |
+| Verifier Zalo | URL hợp lệ, không chứa username/password; production yêu cầu HTTPS. Secret verifier không được trống hoặc bằng giá trị marker bị source từ chối. |
+| Email | Chỉ bật gửi khi `TAHO_EMAIL_DELIVERY_ENABLED=true` và `TAHO_RUNTIME_ENV=production`; khi bật cần đủ API key, webhook secret, from và reply-to hợp lệ. |
+| Seed demo | Ngoài production, giá trị chính xác `true` bật nhánh demo. Trong production, consumer luôn tắt nhánh này. |
+
+Các điều kiện và nhóm tùy chọn chi tiết nằm tại [Danh mục biến môi trường](/reference/environment-variables).
+
+## Frontend Mini App
+
+Tạo `resident-miniapp/.env.local` nếu cần ghi cấu hình riêng cho Vite:
+
+```dotenv
+# Trống: dùng đường /api và proxy dev hiện có
+VITE_TAHO_API_URL=""
+```
+
+Nếu đặt giá trị khác rỗng, dùng URL gốc của backend cần gọi. Biến này được frontend đọc để ghép các đường `/api/resident/...`; không phải URL của site docs.
+
+Luồng DEV và luồng build khác nhau; xem [Chạy Mini App local](/mini-app/local-development). Không đặt secret server vào file frontend này.

@@ -1,16 +1,57 @@
 ---
-title: "Environment variables"
-description: "Tên environment variables được current source đọc, không công bố values."
+title: "Biến môi trường"
+description: "Ý nghĩa, runtime sử dụng và validation của các nhóm biến được source Taho đọc."
 keywords: ["environment variables", "configuration", "secrets"]
 ---
 
-## Database và runtime
+Đọc [Cấu hình môi trường](/engineering/environment-setup) và [Mẫu env](/reference/env-example) trước khi chuẩn bị file local. Tên biến dưới đây được đối chiếu với consumer; không công bố giá trị môi trường thực tế.
 
-`DATABASE_URL`, `DIRECT_URL`, `NODE_ENV`, `TAHO_DB_CONNECTION_TIMEOUT_MS`, `TAHO_DB_IDLE_TIMEOUT_MS`, `TAHO_DB_POOL_MAX`, `TAHO_DB_LOG_QUERIES`, `TAHO_ENABLE_DEMO_SEED`, `TAHO_JWT_SECRET`.
+## PostgreSQL và phiên
+
+| Biến | Điều kiện và ảnh hưởng |
+| --- | --- |
+| `DATABASE_URL` | Runtime Prisma yêu cầu URL không trống và dùng giao thức `postgres:` hoặc `postgresql:`. Prisma config cũng dùng biến này. |
+| `TAHO_JWT_SECRET` | Ký phiên admin và cư dân; thiếu trong production gây lỗi. Ngoài production có giá trị dự phòng local trong source. |
+| `NODE_ENV` | Chọn nhánh production cho secret, preview identity và validation dịch vụ. Khác với `TAHO_RUNTIME_ENV` của email. |
+| `TAHO_ENABLE_DEMO_SEED` | Consumer khởi tạo database chỉ bật demo ngoài production khi giá trị chính xác là `true`. Production luôn tắt nhánh này. |
+| `TAHO_BOOTSTRAP_ADMIN_NAME` | Tên bắt buộc khi chạy lệnh bootstrap tài khoản nền tảng. |
+| `TAHO_BOOTSTRAP_ADMIN_EMAIL` | Email bắt buộc, được chuẩn hóa chữ thường và kiểm tra định dạng. |
+| `TAHO_BOOTSTRAP_ADMIN_PASSWORD` | Mật khẩu bootstrap ít nhất 12 ký tự, có chữ và số. Không được đọc lại như mật khẩu trong mỗi lần đăng nhập. |
+
+## Trợ lý AI
+
+| Biến | Hành vi hiện tại |
+| --- | --- |
+| `TAHO_OPENAI_API_KEY` | Khóa ưu tiên cho chat và embedding. Khi chưa đặt, source đọc `OPENAI_API_KEY`. Chat và upload trả lỗi cấu hình nếu không có khóa. |
+| `OPENAI_API_KEY` | Khóa dự phòng. Nếu biến Taho chỉ chứa khoảng trắng, consumer trim thành rỗng sau khi chọn biến đó, không chuyển tiếp sang khóa dự phòng. |
+| `TAHO_OPENAI_CHAT_MODEL` | Trim giá trị; rỗng thì dùng `gpt-5.6-luna` theo source. |
+| `TAHO_OPENAI_EMBEDDING_MODEL` | Trim giá trị; rỗng thì dùng `text-embedding-3-small` theo source. |
+
+MCP tìm tài liệu bằng điểm từ khóa khi không có khóa hoặc tạo embedding lỗi. Chat admin và upload không có cùng nhánh bỏ qua OpenAI. Xem [Trợ lý AI](/ai/index).
+
+## Mini App và Zalo
+
+| Biến | Runtime và điều kiện |
+| --- | --- |
+| `VITE_TAHO_API_URL` | Frontend Vite: tiền tố URL API; rỗng thì dùng `/api/...`, đi qua proxy dev khi chạy Vite DEV. |
+| `TAHO_ZALO_APP_SECRET` | Backend: bắt buộc khi xác minh access token Zalo. |
+| `TAHO_ZALO_VERIFIER_URL` | Backend: URL HTTP/HTTPS hợp lệ, không chứa username/password; production yêu cầu HTTPS. |
+| `TAHO_ZALO_VERIFIER_SHARED_SECRET` | Backend: bắt buộc để ký request verifier; không được trống hoặc bằng marker chưa cấu hình mà source từ chối. |
+
+Trong DEV, frontend không chạy xác minh Zalo thật. Backend production yêu cầu token cư dân, không dùng định danh preview thay phiên hợp lệ. Xem [Chạy Mini App local](/mini-app/local-development).
 
 ## Email
 
-`TAHO_EMAIL_DELIVERY_ENABLED`, `TAHO_EMAIL_FROM`, `TAHO_EMAIL_REPLY_TO`, `TAHO_RESEND_API_KEY`, `TAHO_RESEND_WEBHOOK_SECRET`.
+| Biến | Điều kiện sử dụng |
+| --- | --- |
+| `TAHO_RUNTIME_ENV` | Consumer email trim/chuyển chữ thường; rỗng thì dùng `local`. Chỉ `production` cho phép bật gửi. |
+| `TAHO_EMAIL_DELIVERY_ENABLED` | Trim/chuyển chữ thường; chỉ `true` yêu cầu bật gửi, cần đồng thời runtime email là `production`. |
+| `TAHO_RESEND_API_KEY` | Bắt buộc khi gửi email được bật. |
+| `TAHO_RESEND_WEBHOOK_SECRET` | Bắt buộc trong cấu hình gửi; webhook dùng để xác minh chữ ký. |
+| `TAHO_EMAIL_FROM` | Khi gửi được bật: bắt buộc, chứa `@`, không có xuống dòng. |
+| `TAHO_EMAIL_REPLY_TO` | Khi gửi được bật: bắt buộc, đúng định dạng email, không có xuống dòng. |
+
+Có cấu hình chưa chứng minh dispatcher đã chạy. Xem [Gửi nhắc công nợ](/finance/send-debt-reminders).
 
 ## Object storage
 
@@ -18,10 +59,17 @@ keywords: ["environment variables", "configuration", "secrets"]
 
 Compatibility aliases được source đọc: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_ENDPOINT`.
 
+Client yêu cầu account, access key, secret key và bucket không rỗng. Endpoint mặc định được suy ra từ account; endpoint riêng chỉ được nhận khi qua validation storage. `TAHO_R2_ALLOW_INSECURE_LOCAL_ENDPOINT` có alias `R2_ALLOW_INSECURE_LOCAL_ENDPOINT` và chỉ giá trị chính xác `true` cho phép nhánh endpoint loopback mà source kiểm tra.
+
 ## Analytics và test tooling
 
 `NEXT_PUBLIC_GA_ID`, `TAHO_E2E_CHROME_PATH`, `TAHO_E2E_PORT`, `TAHO_E2E_RESULT_PATH`, `TAHO_E2E_SERVER_MODE`, `TAHO_PLAYWRIGHT_MODULE_PATH`, `TAHO_EVIDENCE_DIR`.
 
-Required/optional status phụ thuộc call path. Not confirmed by current source code: một bộ biến tối thiểu duy nhất cho mọi runtime mode.
+## Các tên trong docs cũ chưa có consumer hiện tại
+
+| Tên từng được liệt kê | Kết luận đối chiếu |
+| --- | --- |
+| `DIRECT_URL` | Prisma config dùng `DATABASE_URL`. Consumer cho `DIRECT_URL`: Not confirmed by current source code. |
+| `TAHO_DB_CONNECTION_TIMEOUT_MS`, `TAHO_DB_IDLE_TIMEOUT_MS`, `TAHO_DB_POOL_MAX`, `TAHO_DB_LOG_QUERIES` | Đường tạo Prisma adapter hiện truyền URL và timeout kết nối cố định 5.000 ms. Khả năng đổi các tùy chọn này bằng nhóm biến cũ: Not confirmed by current source code. |
 
 Xem integration consumers tại [Integrations](/engineering/integrations).

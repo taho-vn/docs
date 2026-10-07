@@ -2,7 +2,7 @@
 title: "Data dictionary"
 description: "Đầy đủ model, database column, Prisma type, nullability, default, relation và constraint từ current schema."
 keywords: ["data dictionary", "Prisma models", "database fields", "schema", "relations"]
-schemaFingerprint: "sha256:fd1f2de491363c8d11dbf7708e23488f3fff6389ae0f9e71dbf40c13eb1e8860"
+schemaFingerprint: "sha256:c44b851988ec130905e55c650926f37c91c52fb39e649b06db56a2cbe15aeb1c"
 ---
 
 Trang này được sinh trực tiếp từ `prisma/schema.prisma`. Current schema có **69 models**.
@@ -455,6 +455,7 @@ Căn hộ, hồ sơ cư dân, membership, reconciliation import và phương ti�
 
 - Database table: `apartments`
 - `@@unique([id, tower_id])`
+- `@@unique([tower_id, code])`
 - `@@index([tower_id])`
 
 </Accordion>
@@ -918,7 +919,6 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 | `customer` | `String` | Không | `@default("")` |
 | `cycle` | `String` | Không | `@default("")` |
 | `apartment` | `String` | Không | `@default("")` |
-| `apartment_id` | `Int?` | Có | — |
 | `amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
 | `current_amount` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
 | `paid` | `Decimal` | Không | `@default(0) @db.Decimal(18, 2)` |
@@ -935,7 +935,7 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 | Field | Prisma type | Relation attributes |
 | --- | --- | --- |
 | `tower_record` | `Towers` | `@relation(fields: [tower_id], references: [tower_code], onDelete: Restrict, onUpdate: Cascade)` |
-| `apartment_record` | `Apartments?` | `@relation(fields: [apartment_id, tower_id], references: [id, tower_id], onDelete: Restrict, onUpdate: Cascade)` |
+| `apartment_record` | `Apartments` | `@relation(fields: [tower_id, apartment], references: [tower_id, code], onDelete: Restrict, onUpdate: Cascade)` |
 | `lines` | `BillLines[]` | — |
 | `allocations` | `ReceiptAllocations[]` | — |
 | `adjustments` | `BillingAdjustments[]` | — |
@@ -947,7 +947,9 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 - `@@unique([id, tower_id])`
 - `@@index([tower_id])`
 - `@@index([tower_id, cycle])`
-- `@@index([tower_id, apartment_id, status, cycle])`
+- `@@index([tower_id, apartment])`
+- `@@index([tower_id, apartment, cycle(sort: Desc), id(sort: Desc)], map: "bills_portal_order_idx")`
+- `@@index([tower_id, created_at(sort: Desc), id(sort: Desc)], map: "bills_review_order_idx")`
 
 </Accordion>
 
@@ -989,6 +991,7 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 - `@@unique([id, tower_id])`
 - `@@unique([id, bill_id, tower_id])`
 - `@@index([tower_id, bill_id])`
+- `@@index([bill_id, line_no])`
 - `@@index([tower_id])`
 
 </Accordion>
@@ -1120,6 +1123,7 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 - `@@unique([id, tower_id])`
 - `@@index([tower_id])`
 - `@@index([tower_id, accounting_date])`
+- `@@index([tower_id, apartment, accounting_date(sort: Desc), id(sort: Desc)], map: "receipts_portal_order_idx")`
 
 </Accordion>
 
@@ -1376,7 +1380,6 @@ Bảng kê, điều chỉnh, phiếu thu, phân bổ, tiền thừa, giao dịch
 
 - Database table: `audit_logs`
 - `@@index([tower_id, period])`
-- `@@index([tower_id, target_type, target_id, created_at])`
 - `@@index([tower_id])`
 
 </Accordion>
@@ -1403,7 +1406,7 @@ Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và 
 | `phone` | `String` | Không | `@default("")` |
 | `email` | `String` | Không | `@default("")` |
 | `status` | `String` | Không | `@default("")` |
-| `version` | `Int` | Không | `@default(1)` |
+| `miniapp_zalo_user_id` | `String?` | Có | `@db.VarChar(128)` |
 | `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
 
 **Prisma relation fields**
@@ -1416,6 +1419,8 @@ Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và 
 
 - Database table: `feedback`
 - `@@index([tower_id])`
+- `@@index([tower_id, miniapp_zalo_user_id])`
+- `@@index([tower_id, miniapp_zalo_user_id, apartment, created_at(sort: Desc), id(sort: Desc)], map: "feedback_portal_order_idx")`
 
 </Accordion>
 
@@ -1516,7 +1521,7 @@ Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và 
 | `email` | `String` | Không | `@default("")` |
 | `note` | `String` | Không | `@default("")` |
 | `status` | `String` | Không | `@default("")` |
-| `version` | `Int` | Không | `@default(1)` |
+| `miniapp_zalo_user_id` | `String?` | Có | `@db.VarChar(128)` |
 | `created_at` | `DateTime` | Không | `@default(now()) @db.Timestamptz(3)` |
 
 **Prisma relation fields**
@@ -1529,6 +1534,8 @@ Phản ánh, yêu cầu dịch vụ, nội dung, biểu mẫu, sửa chữa và 
 
 - Database table: `service_requests`
 - `@@index([tower_id])`
+- `@@index([tower_id, miniapp_zalo_user_id])`
+- `@@index([tower_id, miniapp_zalo_user_id, apartment, created_at(sort: Desc), id(sort: Desc)], map: "service_requests_portal_order_idx")`
 
 </Accordion>
 

@@ -1,12 +1,14 @@
 ---
-title: "Testing"
-description: "Test commands, test inventory và direct route coverage hiện tại."
+title: "Kiểm thử"
+description: "Lệnh kiểm thử tự động và chỉ mục testcase cho PM, BA và QA."
 keywords: ["testing", "Node test runner", "Playwright", "coverage"]
 ---
 
-Source snapshot có 62 test files. `yarn test` generate Prisma Client rồi chạy `tsx --test --test-concurrency=1`. `yarn test:coverage` thêm Node experimental coverage với line threshold 80.
+`yarn test` tạo Prisma Client rồi chạy `tsx --test --test-concurrency=1`. `yarn test:coverage` thêm Node experimental coverage với ngưỡng line coverage 80.
 
 `yarn test:e2e` build application rồi chạy `scripts/e2e-smoke.ts`. `yarn verify` chạy unit/integration tests và E2E command theo `package.json` hiện tại.
+
+PM, BA và QA dùng [Chỉ mục testcase](/reference/manual-testcases) để tìm nhóm nghiệm thu và trang nghiệp vụ theo mã case. Trạng thái trong workbook là kết quả được ghi tại thời điểm kiểm thử, không thay thế việc đối chiếu source hoặc kiểm thử lại phiên bản hiện tại.
 
 ## Kiểm thử một use case
 

@@ -26,7 +26,7 @@ Mỗi workflow quan trọng được trình bày theo cùng thứ tự:
 | `UC-FIN-02` | Lập phiếu thu có phân bổ | `Implemented` | Phần bên dưới |
 | `UC-FIN-03` | Tạo, duyệt hoặc hủy điều chỉnh công nợ | `Implemented` | [Công nợ và thanh toán](/operations/debt-payments) |
 | `UC-REM-01` | Xem trước, xếp hàng và gửi nhắc công nợ bằng dispatcher | `Implemented` | Phần bên dưới |
-| `UC-IMP-01` | Preview và commit import | `Implemented` | Phần bên dưới |
+| `UC-IMP-01` | Kiểm tra file và ghi dữ liệu import | `Implemented` | Phần bên dưới |
 | `UC-LND-01` | Gửi thông tin liên hệ từ landing page | `Implemented` | [Route catalog](/reference/route-catalog) |
 
 Catalog này liệt kê các workflow chuyên biệt đã được trace trong source. CRUD generic còn lại nằm trong [Route catalog](/reference/route-catalog).
@@ -209,17 +209,34 @@ flowchart TD
 **Phân loại:** `Implemented`
 
 ```mermaid
-flowchart LR
-  A["Upload file"] --> B["Parse theo route"]
-  B --> C["Lưu preview và lỗi theo dòng"]
-  C --> D{"Preview hợp lệ?"}
-  D -- "Không" --> X["Dừng tại preview"]
-  D -- "Có" --> E["Người dùng xác nhận commit"]
-  E --> F["Kiểm tra route, tower và trạng thái preview"]
-  F --> G["Ghi target tables trong workflow phù hợp"]
+flowchart TD
+  A["Gửi file"] --> B["Đọc file theo route và lưu kết quả kiểm tra"]
+  B --> C{"File hợp lệ?"}
+  C -->|Không| D["Trả lỗi, chưa ghi dữ liệu nghiệp vụ"]
+  C -->|Có| E{"Module tài chính?"}
+  E -->|Có| F["Handler ghi ngay qua workflow tài chính"]
+  E -->|Không| G["Chờ người dùng xác nhận ghi"]
+  G --> H["Kiểm tra route, tòa nhà và bản xem trước"]
+  H --> I["Ghi danh mục hoặc đưa cư dân vào hàng chờ đối soát"]
 ```
 
-File parse thành công không đồng nghĩa target tables đã được cập nhật. Preview và commit là hai bước riêng. Financial import kiểm tra preview thuộc route và tower hiện tại trước khi commit.
+Đọc file thành công chưa đủ để ghi dữ liệu: kết quả kiểm tra phải hợp lệ. Import thông thường chờ người dùng xác nhận ghi; import tài chính được handler ghi ngay sau kiểm tra hợp lệ. Cả hai đường ghi đều kiểm tra bản xem trước thuộc route và tòa nhà.
+
+<Warning>
+  **Import bảng kê** không chờ bước xác nhận ghi riêng. Import cư dân chỉ tạo mục chờ đối soát, chưa tự tạo hồ sơ hoặc liên kết căn hộ.
+</Warning>
+
+### Dành cho PM / BA / QA
+
+Với vai trò người dùng có quyền truy cập màn hình import, tôi muốn gửi file và kiểm tra dữ liệu để ghi danh mục hoặc đưa dữ liệu cư dân vào hàng chờ đối soát.
+
+| Given — Bối cảnh | When — Hành động | Then — Kết quả |
+| --- | --- | --- |
+| File căn hộ hợp lệ trong tòa nhà đang chọn | Chọn **Kiểm tra dữ liệu** | Lưu bản xem trước; chưa ghi căn hộ |
+| Bản xem trước căn hộ hợp lệ, chưa ghi | Chọn **Ghi dữ liệu vào hệ thống** | Ghi dữ liệu qua đường commit của repository |
+| File thuộc module tài chính hợp lệ | Gửi file import | Handler gọi workflow ghi dữ liệu ngay |
+| Bản xem trước cư dân hợp lệ | Xác nhận ghi | Tạo các mục chờ đối soát; chưa tạo hồ sơ hoặc membership |
+| File có lỗi dữ liệu | Gửi file | Hiển thị lỗi; không ghi các bản ghi nghiệp vụ từ file đó |
 
 <Accordion title="Dành cho Engineering">
   Entry point là `POST /admin/import`. Financial import đi qua `commitFinancialImportPreview`; resident import đi qua reconciliation workflow. Generic và financial import không dùng chung toàn bộ persistence path.

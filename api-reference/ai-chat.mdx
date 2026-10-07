@@ -1,0 +1,10 @@
+---
+title: "Gửi câu hỏi AI"
+description: "Tạo câu trả lời từ tài liệu, lịch sử và công cụ dữ liệu được phép."
+keywords: ["API", "OpenAPI", "POST", "/admin/ai/chat"]
+openapi: "/openapi.json POST /admin/ai/chat"
+---
+
+Server trả JSON sau khi xử lý xong. Câu hỏi được trim; validation độ dài trong service chạy sau bước embedding/tìm tài liệu của handler. Không giả định câu hỏi không hợp lệ luôn bị từ chối trước khi gọi OpenAI.
+
+Xem [Trợ lý AI](/ai/index) để hiểu dữ liệu gửi tới provider và giới hạn tra cứu.

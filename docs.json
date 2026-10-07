@@ -15,6 +15,11 @@
   "icons": {
     "library": "lucide"
   },
+  "api": {
+    "playground": {
+      "display": "simple"
+    }
+  },
   "navigation": {
     "tabs": [
       {
@@ -48,7 +53,7 @@
           },
           {
             "group": "Tương tác cư dân",
-            "pages": ["operations/resident-interactions"]
+            "pages": ["operations/resident-interactions", "operations/resident-miniapp"]
           },
           {
             "group": "Tài khoản và cấu hình",
@@ -69,6 +74,42 @@
         ]
       },
       {
+        "tab": "AI",
+        "pages": ["ai/index"]
+      },
+      {
+        "tab": "Mini App",
+        "pages": [
+          "mini-app/index",
+          "mini-app/local-development"
+        ]
+      },
+      {
+        "tab": "API / Swagger",
+        "openapi": "openapi.json",
+        "pages": [
+          "api-reference/index",
+          {
+            "group": "Mini App",
+            "pages": [
+              "api-reference/resident-auth",
+              "api-reference/resident-portal",
+              "api-reference/resident-actions",
+              "api-reference/resident-access-review"
+            ]
+          },
+          {
+            "group": "Trợ lý AI",
+            "pages": [
+              "api-reference/ai-history",
+              "api-reference/ai-chat",
+              "api-reference/ai-knowledge-upload",
+              "api-reference/ai-knowledge-archive"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Kỹ thuật",
         "pages": [
           {
@@ -83,6 +124,7 @@
             "group": "Phát triển",
             "pages": [
               "engineering/local-development",
+              "engineering/environment-setup",
               "engineering/database",
               "engineering/route-handlers",
               "engineering/import-export",
@@ -105,6 +147,7 @@
               "reference/route-catalog",
               "reference/data-dictionary",
               "reference/environment-variables",
+              "reference/env-example",
               "reference/error-status-catalog"
             ]
           },
@@ -113,8 +156,8 @@
             "pages": ["reference/runbooks"]
           },
           {
-            "group": "Tình trạng phát hành",
-            "pages": ["reference/release-status"]
+            "group": "Kiểm thử và phát hành",
+            "pages": ["reference/manual-testcases", "reference/release-status"]
           }
         ]
       }

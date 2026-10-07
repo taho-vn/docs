@@ -44,6 +44,10 @@ Khi mở một ý kiến hoặc yêu cầu, người có quyền có thể:
 
 Khi phản hồi một bản ghi đang chờ, hệ thống có thể chuyển bản ghi sang trạng thái đang xử lý. Các trạng thái được hiển thị tại [State machines](/product-specs/state-machines).
 
+<Info>
+  Với ý kiến đã **Đã hoàn thành**, giao diện chỉ giữ trạng thái hoàn thành và server chặn mở lại qua cập nhật trạng thái. Yêu cầu dịch vụ hiện có tập lựa chọn trạng thái khác; giới hạn chuyển trạng thái được mô tả tại [Tình trạng tính năng](/reference/release-status).
+</Info>
+
 ## Xử lý lỗi
 
 | Khi gặp | Điều kiện source đang kiểm tra |

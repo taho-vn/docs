@@ -1,0 +1,10 @@
+---
+title: "Gửi thao tác cư dân"
+description: "Gửi thông tin liên kết căn hộ hoặc tạo yêu cầu theo quyền cư dân."
+keywords: ["API", "OpenAPI", "POST", "/api/resident/portal"]
+openapi: "/openapi.json POST /api/resident/portal"
+---
+
+`request_access` đặt liên kết về `pending`, không tự duyệt. `create_request` có nhánh `feedback` và `service` ở backend; giao diện hiện chỉ gửi ý kiến. Các trường dịch vụ phụ thuộc loại yêu cầu; schema `values` không thay thế validation nghiệp vụ đó.
+
+Không có khóa chống lặp cho tạo ý kiến trong luồng này. Xem [Duyệt truy cập Mini App](/operations/resident-miniapp).

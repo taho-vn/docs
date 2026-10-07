@@ -1,0 +1,66 @@
+---
+title: "API / Swagger"
+description: "Điểm bắt đầu cho hợp đồng HTTP, xác thực và đặc tả OpenAPI của Mini App và trợ lý AI."
+keywords: ["API", "Swagger", "OpenAPI", "request", "response"]
+---
+
+Trang này giúp bạn đọc request, response và điều kiện truy cập trước khi gọi API. Các trang endpoint bên trái hiển thị hợp đồng OpenAPI cho Mini App và trợ lý AI đã được đối chiếu với handler hiện tại.
+
+## Swagger nằm ở đâu?
+
+Đặc tả `openapi.json` nằm trong repository docs và dùng để hiển thị các trang API. Đây là tài liệu bổ sung từ source hiện tại. Swagger UI hoặc endpoint phục vụ OpenAPI trong application: **Not Found**. Not confirmed by current source code.
+
+Mở file `openapi.json` ở thư mục gốc repository docs bằng công cụ hỗ trợ OpenAPI. Các trang endpoint sử dụng cơ chế [OpenAPI của Mintlify](https://www.mintlify.com/docs/api-playground/openapi-setup).
+
+Không giả định application có `/swagger`, `/api-docs` hoặc `/openapi.json`. Danh sách đầy đủ route và method nằm tại [Danh mục route](/reference/route-catalog).
+
+Đặc tả chưa đặt `servers` vì docs không có URL gốc application được xác nhận dùng chung cho mọi môi trường. Các trang dùng chế độ đọc hợp đồng, không có nút gửi request. Nếu mẫu cURL hiện `https://api.example.com`, đó là URL minh họa của trình hiển thị; thay bằng URL backend của môi trường kiểm thử trước khi chạy.
+
+## Chọn nhóm API
+
+| Bạn đang làm gì? | Hợp đồng cần đọc |
+| --- | --- |
+| Đăng nhập Mini App bằng Zalo | [Xác minh danh tính](/api-reference/resident-auth) |
+| Đọc dữ liệu căn hộ | [Đọc portal](/api-reference/resident-portal) |
+| Gửi liên kết hoặc ý kiến | [Gửi thao tác cư dân](/api-reference/resident-actions) |
+| BQL duyệt, từ chối hoặc thu hồi | [Duyệt quyền căn hộ](/api-reference/resident-access-review) |
+| Hỏi trợ lý và mở lịch sử | [Gửi câu hỏi](/api-reference/ai-chat), [Đọc lịch sử](/api-reference/ai-history) |
+| Thêm hoặc lưu trữ tài liệu | [Tải tài liệu](/api-reference/ai-knowledge-upload), [Lưu trữ tài liệu](/api-reference/ai-knowledge-archive) |
+| Gọi công cụ MCP | [Phạm vi MCP](/ai/index#kết-nối-mcp); endpoint dùng giao thức MCP, không dùng body chat của AI |
+| Workflow tài chính, import hoặc export | [Route handlers](/engineering/route-handlers), [Nhập và xuất dữ liệu](/engineering/import-export), [Danh mục route](/reference/route-catalog) |
+
+## Hai loại phiên khác nhau
+
+| Kênh | Cách xác thực và phạm vi |
+| --- | --- |
+| Admin và AI | Phiên quản trị; backend đọc quyền route/action và tòa nhà đang chọn. Hỗ trợ token admin qua header hoặc cookie phiên. |
+| Mini App | `Authorization: Bearer <RESIDENT_SESSION_TOKEN>` sau khi backend xác minh Zalo. Quyền căn hộ được đọc từ liên kết của định danh cư dân. |
+
+`accessToken` gửi tới endpoint xác minh Zalo khác với token phiên Taho trả về. Token cư dân không thay thế phiên admin. Header preview chỉ dành cho nhánh ngoài production được mô tả tại [Chạy Mini App local](/mini-app/local-development).
+
+Mutation quản trị còn kiểm tra nguồn request, quyền route/action và dữ liệu đầu vào. Chỉ có token chưa bảo đảm yêu cầu được chấp nhận.
+
+## Đọc response
+
+Các endpoint trong đặc tả dùng một trong hai cấu trúc sau:
+
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "<ERROR_CODE>",
+    "message": "<PUBLIC_MESSAGE>"
+  }
+}
+```
+
+`data` phụ thuộc endpoint; `error.details` chỉ xuất hiện khi handler cung cấp. Workflow admin có thể trả `redirectTo` trong JSON, còn file export/attachment và MCP có hợp đồng riêng. Không áp dụng mẫu JSON này cho mọi route.
+
+Đọc [Cấu hình môi trường](/engineering/environment-setup) và [Chỉ mục testcase](/reference/manual-testcases) để nối cấu hình, request và mục tiêu nghiệp vụ.

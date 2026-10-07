@@ -1,0 +1,1639 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Taho: Mini App và AI",
+    "version": "source-review-2026-10-07",
+    "description": "Đặc tả biên soạn trong docs từ handler và service hiện tại. Không phải endpoint Swagger do application phục vụ; không xác nhận kết nối provider hoặc UAT."
+  },
+  "tags": [
+    {
+      "name": "Mini App"
+    },
+    {
+      "name": "Admin Mini App"
+    },
+    {
+      "name": "AI"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ResidentBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token phiên cư dân Taho sau khi xác minh Zalo; không phải Zalo access token."
+      },
+      "AdminBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token phiên quản trị, vẫn phải qua route/action và active tower checks."
+      },
+      "AdminCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "taho_jwt"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {}
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ],
+        "additionalProperties": true
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "zaloUserId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "verifiedPhone": {
+            "type": "string",
+            "description": "Luồng xác minh hiện trả chuỗi rỗng."
+          }
+        },
+        "required": [
+          "zaloUserId",
+          "displayName",
+          "verifiedPhone"
+        ],
+        "additionalProperties": true
+      },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "revoked"
+            ]
+          },
+          "relationshipCode": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "tower": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "apartment": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      },
+      "Bill": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "cycle": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Số tiền được serialize thành chuỗi."
+          },
+          "paid": {
+            "type": "string"
+          },
+          "debt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "serviceName": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string"
+                },
+                "paid": {
+                  "type": "string"
+                },
+                "debt": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Receipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "accountingDate": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Portal": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "link",
+                  "pending",
+                  "rejected"
+                ]
+              },
+              "identity": {
+                "$ref": "#/components/schemas/Identity"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Link"
+                }
+              },
+              "towers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "state",
+              "identity",
+              "links",
+              "towers"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "approved"
+                ]
+              },
+              "identity": {
+                "$ref": "#/components/schemas/Identity"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Link"
+                }
+              },
+              "currentAccess": {
+                "$ref": "#/components/schemas/Link"
+              },
+              "resident": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              },
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "debt": {
+                    "type": "string",
+                    "description": "Tổng nợ từ tối đa 24 bảng kê trả về."
+                  },
+                  "openRequests": {
+                    "type": "integer"
+                  },
+                  "unreadNotices": {
+                    "type": "integer",
+                    "description": "Số thông báo trả về; không phải trạng thái đã đọc theo account."
+                  }
+                },
+                "additionalProperties": true
+              },
+              "notices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "author": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "bills": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Bill"
+                }
+              },
+              "receipts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              },
+              "requests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "handbook": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "partner": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "state",
+              "identity",
+              "links",
+              "currentAccess",
+              "summary",
+              "bills",
+              "receipts",
+              "requests"
+            ],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "Thread": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "chunkCount": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "paths": {
+    "/api/resident/auth/zalo": {
+      "post": {
+        "operationId": "authenticateResident",
+        "summary": "Xác minh danh tính Zalo",
+        "tags": [
+          "Mini App"
+        ],
+        "security": [],
+        "description": "Gửi Zalo access token tới backend; backend gọi verifier rồi ký token phiên Taho. Không xin quyền số điện thoại; verifiedPhone hiện rỗng.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accessToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "description": "Access token từ Zalo SDK; không công bố token thật."
+                  }
+                },
+                "required": [
+                  "accessToken"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nhận token phiên Taho.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "expiresIn": {
+                          "type": "integer",
+                          "enum": [
+                            43200
+                          ],
+                          "description": "Thời hạn theo source, tính bằng giây."
+                        }
+                      },
+                      "required": [
+                        "token",
+                        "expiresIn"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-json hoặc invalid-zalo-proof cho đầu vào không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid-zalo-proof khi verifier từ chối danh tính.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "resident-auth-failed cho lỗi ngoài nhóm nghiệp vụ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "zalo-unavailable khi gọi verifier thất bại.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "zalo-not-configured hoặc zalo-verifier-not-configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/resident/portal": {
+      "get": {
+        "operationId": "readResidentPortal",
+        "summary": "Đọc portal cư dân",
+        "tags": [
+          "Mini App"
+        ],
+        "security": [
+          {
+            "ResidentBearer": []
+          }
+        ],
+        "description": "Production yêu cầu token cư dân. Ngoài production, request không có Authorization có thể dùng định danh preview. ID căn không khớp sẽ chọn liên kết approved đầu tiên. API chỉ đọc dữ liệu; tổng nợ được cộng từ tập bảng kê giới hạn.",
+        "parameters": [
+          {
+            "name": "apartmentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID căn hộ trong liên kết approved; thiếu hoặc không khớp sẽ dùng căn được duyệt đầu tiên."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trạng thái liên kết hoặc dữ liệu portal đã được duyệt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Portal"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized khi token không hợp lệ hoặc production thiếu token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "resident-portal-failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "submitResidentAction",
+        "summary": "Gửi liên kết hoặc yêu cầu cư dân",
+        "tags": [
+          "Mini App"
+        ],
+        "security": [
+          {
+            "ResidentBearer": []
+          }
+        ],
+        "description": "request_access upsert liên kết pending. create_request yêu cầu quyền căn approved, tạo bản ghi trực tiếp; không có khóa idempotency. Giao diện Mini App hiện chỉ gửi feedback.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "intent": {
+                        "type": "string",
+                        "enum": [
+                          "request_access"
+                        ]
+                      },
+                      "towerId": {
+                        "type": "string"
+                      },
+                      "apartmentCode": {
+                        "type": "string",
+                        "description": "Mã căn active trong tòa nhà."
+                      },
+                      "relationshipCode": {
+                        "type": "string",
+                        "enum": [
+                          "owner",
+                          "co_owner",
+                          "tenant",
+                          "spouse",
+                          "child",
+                        "parent",
+                        "sibling",
+                        "former_owner",
+                        "authorized",
+                          "other"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "intent",
+                      "towerId",
+                      "apartmentCode",
+                      "relationshipCode"
+                    ],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "intent": {
+                        "type": "string",
+                        "enum": [
+                          "create_request"
+                        ]
+                      },
+                      "apartmentId": {
+                        "oneOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "requestType": {
+                        "type": "string",
+                        "enum": [
+                          "feedback",
+                          "service"
+                        ]
+                      },
+                      "values": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "description": "Feedback yêu cầu tiêu đề; server trim và giới hạn nội dung."
+                          },
+                          "content": {
+                            "type": "string",
+                            "description": "Feedback yêu cầu nội dung. Service cần các trường riêng theo loại yêu cầu."
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    },
+                    "required": [
+                      "intent",
+                      "apartmentId",
+                      "requestType",
+                      "values"
+                    ],
+                    "additionalProperties": true
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Liên kết pending hoặc ID yêu cầu vừa tạo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "pending"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "status"
+                          ],
+                          "additionalProperties": true
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": true
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-intent, invalid-apartment, invalid-relationship, invalid-request hoặc invalid-request-type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized khi phiên không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden khi tạo yêu cầu cho căn chưa được duyệt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "resident-portal-failed; JSON body hỏng cũng đi qua catch lỗi chung.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/resident-miniapp/action": {
+      "post": {
+        "operationId": "reviewResidentAccess",
+        "summary": "Duyệt, từ chối hoặc thu hồi quyền căn hộ",
+        "tags": [
+          "Admin Mini App"
+        ],
+        "security": [
+          {
+            "AdminBearer": []
+          },
+          {
+            "AdminCookie": []
+          }
+        ],
+        "description": "Cần phiên admin, route /admin/resident-miniapp, tòa nhà và same-origin. Chỉ duyệt/từ chối pending hoặc thu hồi approved. Cập nhật liên kết và audit cùng transaction; không tạo cư dân/membership.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject",
+                      "revoke"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Bắt buộc có nội dung khi reject; server trim và lấy tối đa 300 ký tự."
+                  }
+                },
+                "required": [
+                  "id",
+                  "decision"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID và trạng thái liên kết sau cập nhật.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "approved",
+                            "rejected",
+                            "revoked"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-review, reason-required hoặc invalid-state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden-origin hoặc forbidden; handler cũng dùng forbidden khi thiếu phiên.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "link-not-found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "review-failed; JSON body hỏng đi qua catch lỗi chung.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ai/chat": {
+      "get": {
+        "operationId": "readAiHistory",
+        "summary": "Đọc lịch sử trò chuyện AI",
+        "tags": [
+          "AI"
+        ],
+        "security": [
+          {
+            "AdminBearer": []
+          },
+          {
+            "AdminCookie": []
+          }
+        ],
+        "description": "Giới hạn theo tòa nhà và chủ cuộc trò chuyện. Handler trả unauthorized 401 cho cả thiếu phiên hoặc thiếu quyền route trong GET.",
+        "parameters": [
+          {
+            "name": "threadId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Có giá trị: đọc tối đa 100 tin nhắn theo thứ tự cũ đến mới. Không có: đọc tối đa 50 cuộc trò chuyện."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách thread hoặc tin nhắn của thread.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "threads": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Thread"
+                              }
+                            }
+                          },
+                          "required": [
+                            "threads"
+                          ],
+                          "additionalProperties": true
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "threadId": {
+                              "type": "string"
+                            },
+                            "messages": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Message"
+                              }
+                            }
+                          },
+                          "required": [
+                            "threadId",
+                            "messages"
+                          ],
+                          "additionalProperties": true
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-chat-request, gồm thread không thuộc chủ/tòa nhà hoặc không tồn tại.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ai-unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "sendAiMessage",
+        "summary": "Gửi câu hỏi AI",
+        "tags": [
+          "AI"
+        ],
+        "security": [
+          {
+            "AdminBearer": []
+          },
+          {
+            "AdminCookie": []
+          }
+        ],
+        "description": "Cần same-origin, quyền AI và khóa OpenAI. Body tối đa 32 KiB; 20 request/phút theo actor/tòa nhà/scope. Tìm tối đa 6 đoạn; dùng tối đa 12 tin nhắn gần nhất khi hỏi tiếp. Trả JSON sau khi xử lý; không streaming.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "threadId": {
+                    "type": "string",
+                    "description": "Bỏ trống để tạo thread mới; có giá trị phải thuộc chủ và tòa nhà."
+                  }
+                },
+                "required": [
+                  "message"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Câu trả lời sau khi ghi lượt hỏi–đáp.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "threadId": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "object",
+                          "properties": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "assistant"
+                              ]
+                            },
+                            "content": {
+                              "type": "string"
+                            },
+                            "citations": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "role",
+                            "content",
+                            "citations"
+                          ],
+                          "additionalProperties": true
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "threadId",
+                        "message",
+                        "model"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-chat-request cho lỗi được publicChatError nhận diện.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden-origin hoặc forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "request-too-large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate-limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ai-unavailable; JSON lỗi cú pháp ngoài nhóm nhận diện cũng tới catch chung.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ai-not-configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ai/knowledge": {
+      "post": {
+        "operationId": "uploadAiKnowledge",
+        "summary": "Tải tài liệu và lập chỉ mục",
+        "tags": [
+          "AI"
+        ],
+        "security": [
+          {
+            "AdminBearer": []
+          },
+          {
+            "AdminCookie": []
+          }
+        ],
+        "description": "Cần quyền AI và manage_ai_knowledge, same-origin. Tệp TXT/MD/CSV/JSON/PDF/DOCX/XLSX tối đa 10 MB; nội dung tối đa 1.000.000 ký tự. Không có GET trên endpoint này.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Tệp văn bản được hỗ trợ; kiểm tra extension, MIME và nội dung trích xuất."
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "general",
+                      "accounting",
+                      "operations",
+                      "residents",
+                      "maintenance",
+                      "services",
+                      "safety",
+                      "legal"
+                    ],
+                    "default": "general"
+                  }
+                },
+                "required": [
+                  "file",
+                  "title"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tài liệu sau khi tạo embedding, lưu đoạn và audit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "document": {
+                          "$ref": "#/components/schemas/Document"
+                        }
+                      },
+                      "required": [
+                        "document"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-knowledge.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden-origin hoặc forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "request-too-large khi vượt giới hạn request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "knowledge-unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ai-not-configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "archiveAiKnowledge",
+        "summary": "Lưu trữ tài liệu AI",
+        "tags": [
+          "AI"
+        ],
+        "security": [
+          {
+            "AdminBearer": []
+          },
+          {
+            "AdminCookie": []
+          }
+        ],
+        "description": "Cần cùng quyền quản lý tri thức và same-origin. Chuyển tài liệu ready sang archived, không xóa vật lý. Ghi audit cùng transaction. Body tối đa 4.096 byte.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentId": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "documentId"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID tài liệu và trạng thái archived.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "archived"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "status"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid-knowledge khi tài liệu hoặc trạng thái không hợp lệ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden-origin hoặc forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "request-too-large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "knowledge-unavailable, gồm lỗi JSON ngoài nhóm nhận diện.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

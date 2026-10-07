@@ -51,7 +51,21 @@ Bạn cũng có thể mở chi tiết một cư dân để gắn thêm căn hộ
 
 ## Import hiện tại
 
-Các màn hình **Import căn hộ** và **Import danh sách cư dân** có nút **Cập nhật** đang bị vô hiệu hóa. Bạn vẫn có thể tải **File mẫu** hoặc mở **Lịch sử import**. Source hiện tại không chứng minh hai nút **Cập nhật** này gửi file để commit.
+Bạn nhập dữ liệu qua **Import căn hộ** hoặc **Import danh sách cư dân**. Biểu mẫu nhận XLSX hoặc CSV, tối đa 5 MB.
+
+<Steps>
+  <Step title="Kiểm tra file">
+    Chọn file rồi bấm **Kiểm tra dữ liệu**. Hệ thống hiển thị dữ liệu và lỗi theo dòng; bước này chưa tạo căn hộ hoặc hồ sơ cư dân.
+  </Step>
+  <Step title="Ghi dữ liệu hợp lệ">
+    Khi dữ liệu hợp lệ, bấm **Ghi dữ liệu vào hệ thống**. Import căn hộ ghi các bản ghi vào tòa nhà đang chọn. Import cư dân đưa dữ liệu vào hàng chờ đối soát, chưa tự tạo hồ sơ hoặc liên kết cư dân–căn hộ.
+  </Step>
+  <Step title="Đối soát cư dân">
+    Với dữ liệu cư dân, mở khu vực đối soát và quyết định tạo hồ sơ mới, gắn hồ sơ có sẵn hoặc bỏ qua từng mục.
+  </Step>
+</Steps>
+
+Xem [Nhập và xuất dữ liệu](/engineering/import-export) để phân biệt luồng xem trước với luồng import tài chính.
 
 ## Xử lý lỗi
 
@@ -60,7 +74,7 @@ Các màn hình **Import căn hộ** và **Import danh sách cư dân** có nút
 | Không thấy căn hộ hoặc cư dân cần tìm | Kiểm tra tòa nhà đang chọn. Dữ liệu được giới hạn theo active tower. |
 | Không thấy nút tạo, sửa hoặc xóa | Kiểm tra quyền CRUD của tài khoản trên route hiện tại. |
 | Không tạo được cư dân bằng form generic | Tạo cư dân qua membership workflow. Generic create trả `workflow-required`. |
-| Nút **Cập nhật** import không dùng được | Nút đang bị vô hiệu hóa trong UI hiện tại. |
+| Không thấy **Ghi dữ liệu vào hệ thống** | Chọn file và kiểm tra dữ liệu; chỉ bản xem trước hợp lệ mới có thao tác ghi. |
 
 <Accordion title="Dành cho kỹ thuật">
   Quan hệ được lưu trong `ResidentApartmentMemberships`. Tạo cư dân mới phải đi qua `/admin/resident-memberships`; generic create cho `residents` bị chặn bằng `workflow-required`. Đổi mã căn hộ dùng transaction chuyên biệt để cập nhật các reference liên quan.

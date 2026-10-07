@@ -1,5 +1,5 @@
 ---
-title: "Local development"
+title: "Chạy application local"
 description: "Cách khởi động application và documentation từ scripts hiện tại."
 keywords: ["local development", "Next.js", "Mintlify"]
 ---
@@ -7,6 +7,8 @@ keywords: ["local development", "Next.js", "Mintlify"]
 ## Application
 
 Source hiện dùng Yarn, PostgreSQL và Prisma. Từ application repository:
+
+Trước khi chạy, chuẩn bị cấu hình theo [Cấu hình môi trường](/engineering/environment-setup) và [Mẫu env](/reference/env-example). `DATABASE_URL` phải trỏ tới database local bạn sẽ sử dụng.
 
 ```bash
 yarn install
@@ -20,6 +22,12 @@ yarn dev
 `yarn db:up` gọi Docker Compose service `postgres` từ `compose.yaml`. `yarn dev` chạy Next.js development server.
 
 Không đưa seed credentials từ application repository vào public docs.
+
+## Mini App và API
+
+- [Chỉ mục Mini App](/mini-app/index): chức năng, quyền căn hộ và ranh giới frontend/backend.
+- [Chạy Mini App local](/mini-app/local-development): Vite DEV, dữ liệu mẫu và bản build.
+- [API / Swagger](/api-reference/index): hợp đồng request/response; đặc tả OpenAPI thuộc docs.
 
 ## Documentation
 

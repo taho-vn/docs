@@ -1,0 +1,75 @@
+---
+title: "Chạy Mini App local"
+description: "Chạy giao diện minh họa, preview nối backend và tạo bản build Mini App từ các script hiện có."
+keywords: ["Mini App", "local", "Vite", "preview", "build"]
+---
+
+Bạn chạy các lệnh dưới đây từ thư mục gốc application, nơi có `package.json`. Frontend nằm trong `resident-miniapp`; script ở thư mục gốc khởi động Vite với cấu hình của frontend này.
+
+## Chọn đúng chế độ
+
+| Chế độ | Dữ liệu và xác thực | Dùng để xác minh gì? |
+| --- | --- | --- |
+| DEV với `?demo=1` | Luồng tải portal và tạo ý kiến dùng dữ liệu mẫu trong trình duyệt | Bố cục, điều hướng và hiển thị giao diện. Không xác minh PostgreSQL hoặc quyền backend. |
+| `yarn miniapp:dev` không có `demo=1` | Định danh preview, gọi backend qua `/api` | Luồng API, quyền căn hộ và lưu dữ liệu với backend/database local. Không xác minh Zalo thật. |
+| Bản build | Lấy access token qua Zalo SDK và gọi backend để lấy token Taho | Cần môi trường Zalo và verifier tương ứng; không mặc định coi preview Vite là nghiệm thu thiết bị thật. |
+
+## Xem giao diện bằng dữ liệu mẫu
+
+```bash
+yarn install
+yarn miniapp:dev
+```
+
+Mở `http://127.0.0.1:5174/?demo=1`. Cấu hình Vite dùng cổng 5174 và `strictPort: true`; nếu cổng đang bận, server không tự chuyển sang cổng khác.
+
+## Chạy preview nối backend
+
+<Steps>
+  <Step title="Chuẩn bị backend">
+    Làm theo [cấu hình môi trường](/engineering/environment-setup), chuẩn bị PostgreSQL local rồi chạy `yarn dev` ở terminal thứ nhất. Backend cần chạy tại cổng 3000 theo đích proxy hiện có.
+  </Step>
+  <Step title="Khởi động frontend">
+    Chạy `yarn miniapp:dev` ở terminal thứ hai. Mở `http://127.0.0.1:5174` và chọn **Tiếp tục với Zalo**. Trong DEV, frontend dùng định danh preview và không gọi luồng xác minh Zalo.
+  </Step>
+  <Step title="Gửi thông tin căn hộ">
+    Chọn **Tòa nhà**, nhập **Mã căn hộ**, chọn **Quan hệ với căn hộ**, rồi **Gửi yêu cầu**. Căn hộ phải tồn tại và đang hoạt động trong tòa nhà được chọn.
+  </Step>
+  <Step title="Duyệt rồi kiểm tra portal">
+    Mở admin và thực hiện [Duyệt truy cập Mini App](/operations/resident-miniapp). Quay lại frontend, chọn **Kiểm tra trạng thái**. Kiểm tra **Bảng kê**, **Yêu cầu** và **Cá nhân** theo căn hộ được duyệt.
+  </Step>
+</Steps>
+
+Khi `VITE_TAHO_API_URL` để trống, frontend gửi đường dẫn `/api/...` tới Vite; Vite proxy sang `http://127.0.0.1:3000`. Nếu đặt biến này, frontend dùng URL đó làm tiền tố API. Xem [mẫu env](/reference/env-example).
+
+<Info>
+  Docs local cũng thường dùng cổng 3000. Bạn cần chạy docs và application trên các cổng khác nhau hoặc dừng docs trước khi khởi động application ở cổng mà proxy Mini App đang trỏ tới.
+</Info>
+
+## Tạo bản build
+
+```bash
+yarn miniapp:build
+```
+
+Lệnh build tạo `resident-miniapp/dist`, sau đó đồng bộ danh sách CSS/JS trong `resident-miniapp/app-config.json` theo manifest. Lệnh này thay đổi file cấu hình đó trong checkout.
+
+```bash
+yarn miniapp:preview
+```
+
+Lệnh preview phục vụ bản đã build. Bản build không dùng nhánh `import.meta.env.DEV`, nên không giả định nó có định danh preview hoặc dữ liệu `?demo=1` của dev server. Cấu hình proxy `/api` đã xác nhận nằm trong `server.proxy` của Vite; proxy riêng cho preview: Not confirmed by current source code.
+
+## Khi không chạy được
+
+| Hiện tượng | Kiểm tra theo source |
+| --- | --- |
+| Vite báo cổng bận | Cổng 5174 bị chiếm và `strictPort` đang bật. |
+| Frontend không tải được portal | Kiểm tra đích API, backend và kết nối database; thông báo trên UI có thể kèm **Thử lại**. |
+| Mã căn hộ bị từ chối | Căn hộ phải `active` và khớp trong tòa nhà được gửi. |
+| Chờ duyệt sau khi gửi | Gửi liên kết chỉ tạo `pending`; cần BQL duyệt. |
+| Bản build báo lỗi Zalo hoặc cấu hình | Đối chiếu nhóm `TAHO_ZALO_*` và `TAHO_JWT_SECRET`; các biến này thuộc backend, không phải frontend. |
+
+<Accordion title="Dành cho kỹ thuật">
+  Frontend đi qua `api.ts`; backend xử lý tại `/api/resident/auth/zalo` và `/api/resident/portal`. DEV bỏ bước xác minh Zalo và gửi header định danh preview. Backend production không dùng header preview để thay token phiên.
+</Accordion>

@@ -54,10 +54,8 @@ npx mint a11y
 
 Khi source snapshot thay đổi, re-count admin routes, HTTP handlers, Prisma models, migrations và tests; sau đó trace affected workflows trước khi sửa behavioral claims.
 
-Snapshot dùng cho đợt tài liệu này:
+Ghi commit và các thay đổi chưa commit trong hồ sơ review cho từng lần đối chiếu. Không dùng một snapshot cũ để kết luận mọi trang mô tả đúng source hiện tại.
 
-- Application branch: `feat/landing-page`.
-- Commit: `afee0534862d1f9da647be9002cc97db023a463d`.
-- Working tree có thay đổi chưa commit tại `app/landing/LandingPage.client.tsx`; landing claims đã xét thay đổi này.
+PM và QA có thể bắt đầu từ [Chỉ mục testcase](/reference/manual-testcases); các mâu thuẫn ảnh hưởng nghiệm thu được nêu tại [Tình trạng tính năng](/reference/release-status).
 
 Xem [Testing](/engineering/testing) và [Deployment](/engineering/deployment) để biết implementation phía sau các command.

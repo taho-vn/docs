@@ -1,0 +1,10 @@
+---
+title: "Tải tài liệu tri thức"
+description: "Trích văn bản, tạo embedding và lưu tài liệu theo tòa nhà."
+keywords: ["API", "OpenAPI", "POST", "/admin/ai/knowledge"]
+openapi: "/openapi.json POST /admin/ai/knowledge"
+---
+
+Thiếu quyền `manage_ai_knowledge` bị từ chối. File đã trùng nội dung trong tòa nhà không được tải lại. Tài liệu, các đoạn và audit được lưu cùng transaction sau khi tạo embedding.
+
+Không có GET danh sách tài liệu trên route này; giao diện admin tải danh sách qua repository phía server.

@@ -1,0 +1,10 @@
+---
+title: "Đọc portal cư dân"
+description: "Đọc trạng thái liên kết hoặc dữ liệu của căn hộ được duyệt."
+keywords: ["API", "OpenAPI", "GET", "/api/resident/portal"]
+openapi: "/openapi.json GET /api/resident/portal"
+---
+
+`apartmentId` không khớp không mặc định gây 403: source chọn liên kết được duyệt đầu tiên. API trả tối đa 24 bảng kê và cộng nợ từ tập này. Xem [Mini App](/mini-app/index) và [giới hạn hiện tại](/reference/release-status).
+
+Endpoint có `OPTIONS` trả 204; header CORS chỉ được thêm cho origin Zalo được source cho phép.

@@ -25,7 +25,7 @@ Bạn dùng khu vực **Dịch vụ - phương tiện** để khai báo dịch v
     Nhập thông tin phương tiện và chọn dịch vụ phương tiện phù hợp.
   </Step>
   <Step title="Lưu">
-    Hệ thống kiểm tra căn hộ và dịch vụ, sau đó lưu phương tiện và đồng bộ dịch vụ của căn hộ.
+    Hệ thống kiểm tra căn hộ và dịch vụ, sau đó lưu phương tiện. Xe ở trạng thái chờ chưa tạo dịch vụ đang hoạt động; khi kích hoạt xe, bạn phải có ngày bắt đầu tính phí và hệ thống đồng bộ dịch vụ gắn với xe.
   </Step>
 </Steps>
 
@@ -47,7 +47,8 @@ Bạn dùng khu vực **Dịch vụ - phương tiện** để khai báo dịch v
 
 | Khi gặp | Điều kiện source đang kiểm tra |
 | --- | --- |
-| Không lưu được phương tiện | Căn hộ và dịch vụ phải tồn tại, active và thuộc tòa nhà đang chọn. |
+| Không lưu được phương tiện | Căn hộ và dịch vụ phải thuộc tòa nhà đang chọn; dịch vụ phải là dịch vụ phương tiện. Dịch vụ mới chọn phải đang hoạt động; khi sửa, xe có thể giữ dịch vụ hiện tại đã ngừng hoạt động. |
+| Không kích hoạt được xe | Xe cần ngày bắt đầu tính phí và liên kết căn hộ/dịch vụ hợp lệ. |
 | Không lưu được chỉ số | Dịch vụ phải là `metered`, kỳ phải mở và chỉ số cuối không được nhỏ hơn chỉ số đầu. |
 
 <Accordion title="Dành cho kỹ thuật">

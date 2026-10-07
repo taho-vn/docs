@@ -16,7 +16,7 @@ DATABASE_URL
 → generated Prisma Client
 ```
 
-Pool size, connection timeout, idle timeout và query logging được đọc từ các biến `TAHO_DB_*`. Xem tên biến tại [Environment variables](/reference/environment-variables).
+Đường tạo Prisma adapter hiện truyền URL kết nối và timeout kết nối cố định 5.000 ms. Consumer cho nhóm `TAHO_DB_*` trong đường này: Not confirmed by current source code. Xem [Biến môi trường](/reference/environment-variables).
 
 ## Ba cách source truy cập dữ liệu
 
@@ -26,7 +26,7 @@ Pool size, connection timeout, idle timeout và query logging được đọc t�
 | Specialized service | Membership, vehicle, RBAC, reminder | Validation và transaction theo workflow |
 | Financial transaction | Billing, receipt, adjustment, excess | Lock/version/dependency checks và audit side effects |
 
-`src/core/db/database-store.ts` đăng ký các table delegate cho generic repository. Schema source ứng viên hiện có 69 models; một số relation và workflow model chỉ được service hoặc Prisma transaction truy cập.
+`src/core/db/database-store.ts` đăng ký các table delegate cho generic repository. Schema hiện có 69 models; một số relation và workflow model chỉ được service hoặc Prisma transaction truy cập.
 
 ## Tenant boundary trong schema
 
@@ -39,7 +39,9 @@ Tenant vận hành hiện tại là tòa nhà được nhận diện bằng `Tow
 | Permission groups | `PermissionGroups`, `Permissions` và các bảng nối không có `tower_id` |
 | Authentication account | `AuthUsers` liên kết 1-1 với `Users`; không trực tiếp liên kết tower |
 
-Nhiều relation nghiệp vụ dùng composite key chứa `tower_id`, ví dụ resident–apartment, vehicle–apartment/service, bill–bill line và import reconciliation. Source ứng viên thêm relation `Bills.apartment_id` với `tower_id`. Migration tương ứng chưa được xác nhận triển khai trên database vận hành; xem [Tình trạng tính năng](/reference/release-status).
+Nhiều relation nghiệp vụ dùng khóa kết hợp chứa `tower_id`, ví dụ cư dân–căn hộ, phương tiện–căn hộ/dịch vụ, bảng kê–dòng phí và đối soát cư dân.
+
+`Bills` tham chiếu căn hộ bằng cặp `tower_id` và `apartment`, trỏ tới `Apartments.tower_id` và `Apartments.code`. Schema hiện tại không có `Bills.apartment_id`. Migration kiểm tra mã căn hộ trùng trong cùng tòa nhà và bảng kê tham chiếu sai trước khi tạo khóa ngoại; dữ liệu không hợp lệ làm migration dừng. Việc migration đã chạy trên database vận hành: Not confirmed by current source code.
 
 Generic repository xác định table có tenant scope bằng việc kiểm tra table có column `tower_id`. List thêm tower filter; create sở hữu giá trị `tower_id`; get/update/delete kiểm tra tower của record.
 
@@ -54,7 +56,7 @@ Generic repository xác định table có tenant scope bằng việc kiểm tra 
     Cập nhật `prisma/schema.prisma`, gồm relation, index và database mapping cần thiết.
   </Step>
   <Step title="Tạo migration">
-    Migration được lưu dưới `prisma/migrations`. Hai migration của bản sửa ngày 30/09/2026 còn thuộc source ứng viên, chưa được xác nhận triển khai trên database vận hành.
+    Migration được lưu dưới `prisma/migrations`. Kiểm tra trạng thái migration trên database đích; việc file migration tồn tại không chứng minh đã triển khai.
   </Step>
   <Step title="Cập nhật access path">
     Thêm delegate/repository validation hoặc specialized transaction tùy workflow. Không đưa financial tables vào generic write path.
